@@ -1,0 +1,3 @@
+[mcp_servers.godhand]
+url = "http://127.0.0.1:18765/mcp"
+bearer_token_env_var = "GODHAND_MCP_TOKEN"

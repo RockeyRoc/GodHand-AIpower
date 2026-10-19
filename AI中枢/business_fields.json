@@ -1,0 +1,1579 @@
+{
+  "source_sha256": "e0725eb976ed48da2b3e525e23d6a24a3c12d32e88c60701f46ea6626cb49143",
+  "fields": {
+    "LogWidget": {
+      "text": {
+        "kind": "text",
+        "default": ""
+      },
+      "search_var": {
+        "kind": "value",
+        "default": ""
+      },
+      "_search_visible": {
+        "kind": "literal",
+        "default": false
+      }
+    },
+    "WafTab": {
+      "running": {
+        "kind": "literal",
+        "default": false
+      },
+      "results": {
+        "kind": "literal",
+        "default": []
+      },
+      "_threads": {
+        "kind": "literal",
+        "default": []
+      },
+      "_waf_config_blocked": {
+        "kind": "literal",
+        "default": true
+      },
+      "conn_mode": {
+        "kind": "value",
+        "default": "webshell"
+      },
+      "strength": {
+        "kind": "value",
+        "default": ""
+      },
+      "e_whitelist": {
+        "kind": "value",
+        "default": ""
+      },
+      "e_shell_url": {
+        "kind": "value",
+        "default": "/web/shell.php"
+      },
+      "e_shell_pass": {
+        "kind": "value",
+        "default": ""
+      },
+      "e_port": {
+        "kind": "value",
+        "default": ""
+      },
+      "v_https": {
+        "kind": "value",
+        "default": false
+      },
+      "e_threads": {
+        "kind": "value",
+        "default": ""
+      },
+      "e_timeout": {
+        "kind": "value",
+        "default": ""
+      },
+      "e_retry": {
+        "kind": "value",
+        "default": ""
+      },
+      "e_ssh_host": {
+        "kind": "value",
+        "default": ""
+      },
+      "e_ssh_port": {
+        "kind": "value",
+        "default": ""
+      },
+      "e_ssh_user": {
+        "kind": "value",
+        "default": ""
+      },
+      "e_ssh_pass": {
+        "kind": "value",
+        "default": ""
+      },
+      "e_ssh_webdir": {
+        "kind": "value",
+        "default": ""
+      },
+      "e_target": {
+        "kind": "value",
+        "default": ""
+      },
+      "log_w": {
+        "kind": "log"
+      },
+      "rule_text": {
+        "kind": "text",
+        "default": ""
+      },
+      "e_logpath": {
+        "kind": "value",
+        "default": "/var/log/nginx/access.log"
+      },
+      "traf_text": {
+        "kind": "text",
+        "default": ""
+      },
+      "hb_running": {
+        "kind": "literal",
+        "default": false
+      },
+      "hb_interval": {
+        "kind": "value",
+        "default": "30"
+      },
+      "hb_text": {
+        "kind": "text",
+        "default": ""
+      },
+      "_waf_deploy_vars": {
+        "kind": "literal",
+        "default": {}
+      },
+      "_shell_vars": {
+        "kind": "literal",
+        "default": {}
+      },
+      "_hb_stop": {
+        "kind": "event"
+      },
+      "parent": {
+        "kind": "value",
+        "default": ""
+      },
+      "log": {
+        "kind": "value",
+        "default": ""
+      },
+      "cfg": {
+        "kind": "value",
+        "default": ""
+      },
+      "ws_frame": {
+        "kind": "value",
+        "default": ""
+      },
+      "ssh_frame": {
+        "kind": "value",
+        "default": ""
+      },
+      "btn_deploy": {
+        "kind": "value",
+        "default": ""
+      },
+      "btn_check": {
+        "kind": "value",
+        "default": ""
+      },
+      "btn_update": {
+        "kind": "value",
+        "default": ""
+      },
+      "btn_remove": {
+        "kind": "value",
+        "default": ""
+      },
+      "btn_stop_waf": {
+        "kind": "value",
+        "default": ""
+      },
+      "btn_ssh_deploy_waf": {
+        "kind": "value",
+        "default": ""
+      },
+      "btn_load_rules": {
+        "kind": "value",
+        "default": ""
+      },
+      "btn_save_rules": {
+        "kind": "value",
+        "default": ""
+      },
+      "btn_traf": {
+        "kind": "value",
+        "default": ""
+      },
+      "btn_hb": {
+        "kind": "value",
+        "default": ""
+      },
+      "hb_lbl": {
+        "kind": "value",
+        "default": ""
+      },
+      "root": {
+        "kind": "value",
+        "default": ""
+      },
+      "_get_ep_port": {
+        "kind": "value",
+        "default": ""
+      },
+      "entry_creep_pass": {
+        "kind": "value",
+        "default": ""
+      }
+    },
+    "FlagTab": {
+      "running": {
+        "kind": "literal",
+        "default": false
+      },
+      "stop_flag": {
+        "kind": "event"
+      },
+      "total_submitted": {
+        "kind": "literal",
+        "default": 0
+      },
+      "DEFAULT_CMDS": {
+        "kind": "literal",
+        "default": [
+          "cat /flag",
+          "cat /flag.txt",
+          "cat /root/flag",
+          "env 2>/dev/null | grep -i flag",
+          "type flag.txt"
+        ]
+      },
+      "DEEP_CMDS": {
+        "kind": "literal",
+        "default": [
+          "find /tmp /dev/shm /app /var/www /var/tmp /home /opt /srv /usr/local /var/backups -type f -iname \"*flag*\" -exec grep -h -a -o -E 'flag\\{[^}]+\\}|[a-f0-9]{32}' {} + 2>/dev/null",
+          "find / \\( -path /proc -o -path /sys -o -path /dev -o -path /run \\) -prune -o -type f -iname \"*flag*\" -exec grep -h -a -o -E 'flag\\{[^}]+\\}|[a-f0-9]{32}' {} + 2>/dev/null"
+        ]
+      },
+      "v_creep": {
+        "kind": "value",
+        "default": true
+      },
+      "v_deep": {
+        "kind": "value",
+        "default": false
+      },
+      "creep_pass": {
+        "kind": "value",
+        "default": "cmd"
+      },
+      "creep_path": {
+        "kind": "literal",
+        "default": "/.creep.php"
+      },
+      "entry_ip": {
+        "kind": "value",
+        "default": ""
+      },
+      "entry_self": {
+        "kind": "value",
+        "default": ""
+      },
+      "entry_shell": {
+        "kind": "value",
+        "default": "/web/shell.php"
+      },
+      "entry_pass": {
+        "kind": "value",
+        "default": "cmd"
+      },
+      "entry_port": {
+        "kind": "value",
+        "default": "80"
+      },
+      "v_https_flag": {
+        "kind": "value",
+        "default": ""
+      },
+      "entry_timeout": {
+        "kind": "value",
+        "default": "5"
+      },
+      "cmd_text": {
+        "kind": "text",
+        "default": ""
+      },
+      "entry_creep_path": {
+        "kind": "value",
+        "default": ""
+      },
+      "entry_creep_pass": {
+        "kind": "value",
+        "default": ""
+      },
+      "v_rsa": {
+        "kind": "value",
+        "default": ""
+      },
+      "v_mix": {
+        "kind": "value",
+        "default": ""
+      },
+      "entry_fake": {
+        "kind": "value",
+        "default": "8"
+      },
+      "entry_rsa_agent": {
+        "kind": "value",
+        "default": ""
+      },
+      "entry_submit": {
+        "kind": "value",
+        "default": ""
+      },
+      "entry_token": {
+        "kind": "value",
+        "default": ""
+      },
+      "no_submit_var": {
+        "kind": "value",
+        "default": ""
+      },
+      "entry_interval": {
+        "kind": "value",
+        "default": "30"
+      },
+      "entry_threads": {
+        "kind": "value",
+        "default": "50"
+      },
+      "log_w": {
+        "kind": "log"
+      },
+      "hist_tree": {
+        "kind": "table"
+      },
+      "_history": {
+        "kind": "literal",
+        "default": []
+      },
+      "manual_flag": {
+        "kind": "value",
+        "default": ""
+      },
+      "manual_ip": {
+        "kind": "value",
+        "default": ""
+      },
+      "manual_log": {
+        "kind": "log"
+      },
+      "_submit_urls": {
+        "kind": "literal",
+        "default": []
+      },
+      "_submit_tokens": {
+        "kind": "literal",
+        "default": []
+      },
+      "parent": {
+        "kind": "value",
+        "default": ""
+      },
+      "log": {
+        "kind": "value",
+        "default": ""
+      },
+      "known": {
+        "kind": "value",
+        "default": ""
+      },
+      "cfg_file": {
+        "kind": "value",
+        "default": ""
+      },
+      "btn_start_flag": {
+        "kind": "value",
+        "default": ""
+      },
+      "btn_stop_flag": {
+        "kind": "value",
+        "default": ""
+      },
+      "lbl_targets": {
+        "kind": "value",
+        "default": ""
+      },
+      "lbl_round": {
+        "kind": "value",
+        "default": ""
+      },
+      "lbl_submitted": {
+        "kind": "value",
+        "default": ""
+      },
+      "btn_clear_hist": {
+        "kind": "value",
+        "default": ""
+      },
+      "lbl_hist_stat": {
+        "kind": "value",
+        "default": ""
+      },
+      "root": {
+        "kind": "value",
+        "default": ""
+      }
+    },
+    "MonitorTab": {
+      "target_url": {
+        "kind": "value",
+        "default": "http://127.0.0.1:8090/target_monitor.php"
+      },
+      "password": {
+        "kind": "value",
+        "default": "cmd"
+      },
+      "monitoring": {
+        "kind": "literal",
+        "default": false
+      },
+      "log_data": {
+        "kind": "literal",
+        "default": []
+      },
+      "last_json_hash": {
+        "kind": "literal",
+        "default": ""
+      },
+      "new_alerts": {
+        "kind": "literal",
+        "default": 0
+      },
+      "file_count": {
+        "kind": "literal",
+        "default": 0
+      },
+      "conn_count": {
+        "kind": "literal",
+        "default": 0
+      },
+      "_lock": {
+        "kind": "lock"
+      },
+      "e_url": {
+        "kind": "value",
+        "default": ""
+      },
+      "e_pw": {
+        "kind": "value",
+        "default": ""
+      },
+      "cards": {
+        "kind": "literal",
+        "default": {}
+      },
+      "mon_search_var": {
+        "kind": "value",
+        "default": ""
+      },
+      "log_text": {
+        "kind": "text",
+        "default": ""
+      },
+      "atk_tree": {
+        "kind": "table"
+      },
+      "atk_data": {
+        "kind": "literal",
+        "default": {}
+      },
+      "alert_sound": {
+        "kind": "value",
+        "default": true
+      },
+      "alert_threshold": {
+        "kind": "value",
+        "default": "1"
+      },
+      "_alert_times": {
+        "kind": "literal",
+        "default": []
+      },
+      "fm_path": {
+        "kind": "value",
+        "default": "/"
+      },
+      "fm_search_var": {
+        "kind": "value",
+        "default": ""
+      },
+      "fm_search_entry": {
+        "kind": "value",
+        "default": ""
+      },
+      "fm_search_mode": {
+        "kind": "literal",
+        "default": false
+      },
+      "fm_search_items": {
+        "kind": "literal",
+        "default": []
+      },
+      "fm_list": {
+        "kind": "list"
+      },
+      "fm_edit_box": {
+        "kind": "text",
+        "default": ""
+      },
+      "_deploy_vars": {
+        "kind": "literal",
+        "default": {}
+      },
+      "_monitor_stop": {
+        "kind": "event"
+      },
+      "parent": {
+        "kind": "value",
+        "default": ""
+      },
+      "log": {
+        "kind": "value",
+        "default": ""
+      },
+      "cfg_file": {
+        "kind": "value",
+        "default": ""
+      },
+      "btn_start_mon": {
+        "kind": "value",
+        "default": ""
+      },
+      "btn_export_mon": {
+        "kind": "value",
+        "default": ""
+      },
+      "btn_clear_mon": {
+        "kind": "value",
+        "default": ""
+      },
+      "status_label": {
+        "kind": "value",
+        "default": ""
+      },
+      "mon_log_frame": {
+        "kind": "value",
+        "default": ""
+      },
+      "lbl_atk_stat": {
+        "kind": "value",
+        "default": ""
+      },
+      "lbl_alert_status": {
+        "kind": "value",
+        "default": ""
+      },
+      "fm_status": {
+        "kind": "value",
+        "default": ""
+      },
+      "fm_editor": {
+        "kind": "value",
+        "default": ""
+      },
+      "fm_edit_title": {
+        "kind": "value",
+        "default": ""
+      },
+      "fm_cur_edit": {
+        "kind": "value",
+        "default": ""
+      },
+      "_last_beep": {
+        "kind": "value",
+        "default": ""
+      },
+      "root": {
+        "kind": "value",
+        "default": ""
+      },
+      "_last_success": {
+        "kind": "value",
+        "default": ""
+      }
+    },
+    "CreepTab": {
+      "running": {
+        "kind": "literal",
+        "default": false
+      },
+      "creep_conn_mode": {
+        "kind": "value",
+        "default": "webshell"
+      },
+      "e_ip": {
+        "kind": "value",
+        "default": ""
+      },
+      "e_port": {
+        "kind": "value",
+        "default": ""
+      },
+      "v_https": {
+        "kind": "value",
+        "default": false
+      },
+      "e_surl": {
+        "kind": "value",
+        "default": ""
+      },
+      "e_spass": {
+        "kind": "value",
+        "default": ""
+      },
+      "e_cpass": {
+        "kind": "value",
+        "default": ""
+      },
+      "e_to": {
+        "kind": "value",
+        "default": "10"
+      },
+      "e_webroot": {
+        "kind": "value",
+        "default": ""
+      },
+      "e_creep_ssh_host": {
+        "kind": "value",
+        "default": ""
+      },
+      "e_creep_ssh_port": {
+        "kind": "value",
+        "default": "22"
+      },
+      "e_creep_ssh_user": {
+        "kind": "value",
+        "default": "root"
+      },
+      "e_creep_ssh_pass": {
+        "kind": "value",
+        "default": ""
+      },
+      "e_creep_ssh_webdir": {
+        "kind": "value",
+        "default": "/var/www/html"
+      },
+      "e_cmd": {
+        "kind": "value",
+        "default": ""
+      },
+      "worm_type": {
+        "kind": "value",
+        "default": "creep"
+      },
+      "worm_key": {
+        "kind": "value",
+        "default": "ylphantom"
+      },
+      "shell_func": {
+        "kind": "value",
+        "default": "eval"
+      },
+      "shell_method": {
+        "kind": "value",
+        "default": "post"
+      },
+      "log_w": {
+        "kind": "log"
+      },
+      "c_ssh_port": {
+        "kind": "value",
+        "default": "22"
+      },
+      "c_ssh_user": {
+        "kind": "value",
+        "default": "root"
+      },
+      "c_ssh_pass": {
+        "kind": "value",
+        "default": ""
+      },
+      "c_ssh_backuser": {
+        "kind": "value",
+        "default": "backdoor"
+      },
+      "ssh_back_log": {
+        "kind": "log"
+      },
+      "c_hb_running": {
+        "kind": "literal",
+        "default": false
+      },
+      "c_hb_int": {
+        "kind": "value",
+        "default": "30"
+      },
+      "c_hb_text": {
+        "kind": "text",
+        "default": ""
+      },
+      "_creep_hb_stop": {
+        "kind": "event"
+      },
+      "parent": {
+        "kind": "value",
+        "default": ""
+      },
+      "log": {
+        "kind": "value",
+        "default": ""
+      },
+      "cfg_file": {
+        "kind": "value",
+        "default": ""
+      },
+      "cfg": {
+        "kind": "value",
+        "default": ""
+      },
+      "ws_frame": {
+        "kind": "value",
+        "default": ""
+      },
+      "ssh_frame": {
+        "kind": "value",
+        "default": ""
+      },
+      "btn_implant": {
+        "kind": "value",
+        "default": ""
+      },
+      "btn_dep": {
+        "kind": "value",
+        "default": ""
+      },
+      "btn_spread": {
+        "kind": "value",
+        "default": ""
+      },
+      "btn_check": {
+        "kind": "value",
+        "default": ""
+      },
+      "btn_kill": {
+        "kind": "value",
+        "default": ""
+      },
+      "btn_exec": {
+        "kind": "value",
+        "default": ""
+      },
+      "btn_ssh_back": {
+        "kind": "value",
+        "default": ""
+      },
+      "btn_ssh_check": {
+        "kind": "value",
+        "default": ""
+      },
+      "btn_c_hb": {
+        "kind": "value",
+        "default": ""
+      },
+      "c_hb_lbl": {
+        "kind": "value",
+        "default": ""
+      },
+      "root": {
+        "kind": "value",
+        "default": ""
+      }
+    },
+    "OpsTab": {
+      "running": {
+        "kind": "literal",
+        "default": false
+      },
+      "root": {
+        "kind": "literal",
+        "default": null
+      },
+      "bak_mode": {
+        "kind": "value",
+        "default": "local"
+      },
+      "bak_webdir": {
+        "kind": "value",
+        "default": "/var/www/html"
+      },
+      "bak_ssh_host": {
+        "kind": "value",
+        "default": ""
+      },
+      "bak_ssh_port": {
+        "kind": "value",
+        "default": "22"
+      },
+      "bak_ssh_user": {
+        "kind": "value",
+        "default": "root"
+      },
+      "bak_ssh_pass": {
+        "kind": "value",
+        "default": ""
+      },
+      "bak_ssh_dir": {
+        "kind": "value",
+        "default": "/var/www/html"
+      },
+      "scan_dir": {
+        "kind": "value",
+        "default": "/var/www/html"
+      },
+      "scan_del": {
+        "kind": "value",
+        "default": ""
+      },
+      "db_ip": {
+        "kind": "value",
+        "default": ""
+      },
+      "db_ssh_port": {
+        "kind": "value",
+        "default": "2202"
+      },
+      "db_ssh_user": {
+        "kind": "value",
+        "default": "ctf"
+      },
+      "db_ssh_pass": {
+        "kind": "value",
+        "default": ""
+      },
+      "db_user": {
+        "kind": "value",
+        "default": "root"
+      },
+      "db_pass": {
+        "kind": "value",
+        "default": "root"
+      },
+      "db_name": {
+        "kind": "value",
+        "default": ""
+      },
+      "db_table": {
+        "kind": "value",
+        "default": ""
+      },
+      "db_newpass": {
+        "kind": "value",
+        "default": ""
+      },
+      "db_sql": {
+        "kind": "value",
+        "default": ""
+      },
+      "harden_custom": {
+        "kind": "value",
+        "default": ""
+      },
+      "af_ip": {
+        "kind": "value",
+        "default": ""
+      },
+      "af_port": {
+        "kind": "value",
+        "default": "80"
+      },
+      "af_https": {
+        "kind": "value",
+        "default": ""
+      },
+      "af_shell": {
+        "kind": "value",
+        "default": "/shell.php"
+      },
+      "af_pass": {
+        "kind": "value",
+        "default": "cmd"
+      },
+      "af_to": {
+        "kind": "value",
+        "default": "10"
+      },
+      "af_tree": {
+        "kind": "table"
+      },
+      "af_log": {
+        "kind": "log"
+      },
+      "_af_findings": {
+        "kind": "literal",
+        "default": []
+      },
+      "ban_ip_entry": {
+        "kind": "value",
+        "default": ""
+      },
+      "ban_port": {
+        "kind": "value",
+        "default": "8804"
+      },
+      "ban_target": {
+        "kind": "value",
+        "default": ""
+      },
+      "ban_file": {
+        "kind": "value",
+        "default": ""
+      },
+      "sb_mode": {
+        "kind": "value",
+        "default": "ssh"
+      },
+      "sb_ssh_host": {
+        "kind": "value",
+        "default": ""
+      },
+      "sb_ssh_port": {
+        "kind": "value",
+        "default": "2202"
+      },
+      "sb_ssh_user": {
+        "kind": "value",
+        "default": "ctf"
+      },
+      "sb_ssh_pass": {
+        "kind": "value",
+        "default": ""
+      },
+      "sb_webdir": {
+        "kind": "value",
+        "default": "/var/www/html"
+      },
+      "sb_local_dir": {
+        "kind": "value",
+        "default": ""
+      },
+      "sb_bakdir": {
+        "kind": "value",
+        "default": ""
+      },
+      "sb_running": {
+        "kind": "literal",
+        "default": false
+      },
+      "sb_interval": {
+        "kind": "value",
+        "default": "10"
+      },
+      "_sb_stop": {
+        "kind": "event"
+      },
+      "ssh_ip": {
+        "kind": "value",
+        "default": ""
+      },
+      "ssh_port": {
+        "kind": "value",
+        "default": "22"
+      },
+      "ssh_user": {
+        "kind": "value",
+        "default": "root"
+      },
+      "ssh_pass": {
+        "kind": "value",
+        "default": ""
+      },
+      "ssh_newpass": {
+        "kind": "value",
+        "default": ""
+      },
+      "ssh_cmd": {
+        "kind": "value",
+        "default": ""
+      },
+      "ssh_batch_ip": {
+        "kind": "value",
+        "default": ""
+      },
+      "pi_ip": {
+        "kind": "value",
+        "default": ""
+      },
+      "pi_port": {
+        "kind": "value",
+        "default": "80"
+      },
+      "pi_path": {
+        "kind": "value",
+        "default": "/shell.php"
+      },
+      "pi_pass": {
+        "kind": "value",
+        "default": "cmd"
+      },
+      "pi_search_var": {
+        "kind": "value",
+        "default": ""
+      },
+      "pi_search": {
+        "kind": "value",
+        "default": ""
+      },
+      "pi_tree": {
+        "kind": "table"
+      },
+      "pi_data": {
+        "kind": "literal",
+        "default": []
+      },
+      "parent": {
+        "kind": "value",
+        "default": ""
+      },
+      "log": {
+        "kind": "value",
+        "default": ""
+      },
+      "_godhand_ops_notebook": {
+        "kind": "value",
+        "default": ""
+      },
+      "bak_local": {
+        "kind": "value",
+        "default": ""
+      },
+      "bak_ssh": {
+        "kind": "value",
+        "default": ""
+      },
+      "btn_bak": {
+        "kind": "value",
+        "default": ""
+      },
+      "btn_restore": {
+        "kind": "value",
+        "default": ""
+      },
+      "btn_open_bak": {
+        "kind": "value",
+        "default": ""
+      },
+      "bak_dir_lbl": {
+        "kind": "value",
+        "default": ""
+      },
+      "bak_lw": {
+        "kind": "log"
+      },
+      "btn_scan": {
+        "kind": "value",
+        "default": ""
+      },
+      "scan_lw": {
+        "kind": "log"
+      },
+      "db_lw": {
+        "kind": "log"
+      },
+      "harden_lw": {
+        "kind": "log"
+      },
+      "_harden_cmds": {
+        "kind": "value",
+        "default": ""
+      },
+      "af_lbl_stat": {
+        "kind": "value",
+        "default": ""
+      },
+      "ban_lw": {
+        "kind": "log"
+      },
+      "sb_ssh": {
+        "kind": "value",
+        "default": ""
+      },
+      "sb_local": {
+        "kind": "value",
+        "default": ""
+      },
+      "btn_sb_start": {
+        "kind": "value",
+        "default": ""
+      },
+      "sb_lbl": {
+        "kind": "value",
+        "default": ""
+      },
+      "sb_last": {
+        "kind": "value",
+        "default": ""
+      },
+      "sb_lw": {
+        "kind": "log"
+      },
+      "_disc_log": {
+        "kind": "log"
+      },
+      "btn_ssh_test": {
+        "kind": "value",
+        "default": ""
+      },
+      "btn_ssh_chpass": {
+        "kind": "value",
+        "default": ""
+      },
+      "btn_ssh_cmd": {
+        "kind": "value",
+        "default": ""
+      },
+      "btn_ssh_batch": {
+        "kind": "value",
+        "default": ""
+      },
+      "ssh_lw": {
+        "kind": "log"
+      },
+      "ps_lw": {
+        "kind": "log"
+      },
+      "harden_ip": {
+        "kind": "value",
+        "default": ""
+      },
+      "harden_port": {
+        "kind": "value",
+        "default": ""
+      },
+      "harden_https": {
+        "kind": "value",
+        "default": ""
+      },
+      "harden_to": {
+        "kind": "value",
+        "default": ""
+      },
+      "bak_dir": {
+        "kind": "value",
+        "default": ""
+      },
+      "entry_port": {
+        "kind": "value",
+        "default": ""
+      },
+      "entry_creep_pass": {
+        "kind": "value",
+        "default": ""
+      }
+    },
+    "MachinesTab": {
+      "_machines_blocked": {
+        "kind": "literal",
+        "default": true
+      },
+      "tree": {
+        "kind": "table"
+      },
+      "parent": {
+        "kind": "value",
+        "default": ""
+      },
+      "tabs_ref": {
+        "kind": "value",
+        "default": ""
+      },
+      "cfg_file": {
+        "kind": "value",
+        "default": ""
+      },
+      "machines": {
+        "kind": "value",
+        "default": ""
+      }
+    },
+    "ToolsTab": {
+      "ggc_chain": {
+        "kind": "value",
+        "default": ""
+      },
+      "ggc_params": {
+        "kind": "value",
+        "default": ""
+      },
+      "ggc_enc": {
+        "kind": "value",
+        "default": ""
+      },
+      "ggc_out": {
+        "kind": "text",
+        "default": ""
+      },
+      "df_url": {
+        "kind": "value",
+        "default": ""
+      },
+      "df_pass": {
+        "kind": "value",
+        "default": "cmd"
+      },
+      "df_phpinfo": {
+        "kind": "value",
+        "default": ""
+      },
+      "df_tree": {
+        "kind": "table"
+      },
+      "br_targets": {
+        "kind": "text",
+        "default": ""
+      },
+      "br_cmd": {
+        "kind": "value",
+        "default": "python exploit.py {ip} {port}"
+      },
+      "br_re": {
+        "kind": "value",
+        "default": "flag\\{[^}]+\\}"
+      },
+      "br_sub": {
+        "kind": "value",
+        "default": ""
+      },
+      "br_tok": {
+        "kind": "value",
+        "default": ""
+      },
+      "parent": {
+        "kind": "value",
+        "default": ""
+      },
+      "log": {
+        "kind": "value",
+        "default": ""
+      },
+      "ggc_log": {
+        "kind": "log"
+      },
+      "df_log": {
+        "kind": "log"
+      },
+      "br_workers": {
+        "kind": "value",
+        "default": ""
+      },
+      "br_log": {
+        "kind": "log"
+      },
+      "ggc_chains_list": {
+        "kind": "value",
+        "default": ""
+      },
+      "root": {
+        "kind": "value",
+        "default": ""
+      }
+    },
+    "AWDToolkit": {
+      "_closing": {
+        "kind": "literal",
+        "default": true
+      },
+      "global_conn_mode": {
+        "kind": "value",
+        "default": "webshell"
+      },
+      "global_ip": {
+        "kind": "value",
+        "default": ""
+      },
+      "global_port": {
+        "kind": "value",
+        "default": "80"
+      },
+      "global_shell": {
+        "kind": "value",
+        "default": "/web/shell.php"
+      },
+      "global_pass": {
+        "kind": "value",
+        "default": "cmd"
+      },
+      "global_ssh_port": {
+        "kind": "value",
+        "default": "2202"
+      },
+      "global_ssh_user": {
+        "kind": "value",
+        "default": "ctf"
+      },
+      "root": {
+        "kind": "value",
+        "default": ""
+      },
+      "_dispatcher": {
+        "kind": "value",
+        "default": ""
+      },
+      "_banner_logo": {
+        "kind": "value",
+        "default": ""
+      },
+      "banner": {
+        "kind": "value",
+        "default": ""
+      },
+      "conn_frame": {
+        "kind": "value",
+        "default": ""
+      },
+      "btn_apply": {
+        "kind": "value",
+        "default": ""
+      },
+      "btn_refresh_status": {
+        "kind": "value",
+        "default": ""
+      },
+      "btn_workflow": {
+        "kind": "value",
+        "default": ""
+      },
+      "waf": {
+        "kind": "value",
+        "default": ""
+      },
+      "flag": {
+        "kind": "value",
+        "default": ""
+      },
+      "mon": {
+        "kind": "value",
+        "default": ""
+      },
+      "creep": {
+        "kind": "value",
+        "default": ""
+      },
+      "ops": {
+        "kind": "value",
+        "default": ""
+      },
+      "machines": {
+        "kind": "value",
+        "default": ""
+      },
+      "status_bar": {
+        "kind": "value",
+        "default": ""
+      },
+      "_window_logo": {
+        "kind": "value",
+        "default": ""
+      },
+      "dash": {
+        "kind": "literal",
+        "default": null
+      },
+      "_last_dashboard_values": {
+        "kind": "value",
+        "default": ""
+      }
+    }
+  },
+  "methods": {
+    "LogWidget": [
+      "log",
+      "clear",
+      "add_search_bar",
+      "_do_search",
+      "_clear_search"
+    ],
+    "WafTab": [
+      "load_config",
+      "save_config",
+      "toggle_pass",
+      "_get_public_ip",
+      "_switch_conn_mode",
+      "_auto_mount_waf",
+      "ssh_deploy_waf",
+      "ssh_create_shell",
+      "browse_file",
+      "set_btns",
+      "log_self",
+      "load_targets",
+      "start",
+      "run_batch",
+      "deploy_one",
+      "_deploy_one_ssh",
+      "_deploy_one_webshell",
+      "remove_one",
+      "check_one",
+      "stop",
+      "load_rules",
+      "save_rules",
+      "_exec_cmd",
+      "fetch_traffic",
+      "_heartbeat_after",
+      "toggle_heartbeat",
+      "_domain_init"
+    ],
+    "FlagTab": [
+      "load_known",
+      "save_known",
+      "save_config",
+      "load_config",
+      "log_self",
+      "test_conn",
+      "ssh_deploy_flag",
+      "load_file",
+      "reset_cmds",
+      "test_submit",
+      "get_targets",
+      "submit_flag",
+      "check_one",
+      "hunt_loop",
+      "start_hunt",
+      "stop_hunt",
+      "clear_history",
+      "add_history",
+      "manual_submit",
+      "submit_flag_multi",
+      "check_one_v2",
+      "_domain_init"
+    ],
+    "MonitorTab": [
+      "deploy_monitor",
+      "load_config",
+      "save_config",
+      "toggle",
+      "_monitor_after",
+      "loop",
+      "_mon_search",
+      "_mon_clear_search",
+      "add_lines",
+      "refresh_log",
+      "clear_log",
+      "track_attacker",
+      "_refresh_atk_tree",
+      "_update_atk_server",
+      "_update_sys",
+      "clear_atk",
+      "export_atk",
+      "_check_alert_threshold",
+      "export_log",
+      "fm_base",
+      "fm_req",
+      "fm_post",
+      "fm_search",
+      "fm_clear_search",
+      "fm_refresh",
+      "fm_double_click",
+      "fm_go_up",
+      "fm_edit_file",
+      "fm_save_file",
+      "fm_close_editor",
+      "fm_delete_file",
+      "fm_download",
+      "fm_upload_file",
+      "fm_mkdir",
+      "_domain_init"
+    ],
+    "CreepTab": [
+      "cfg_vals",
+      "_shell_req",
+      "save_cfg",
+      "log_self",
+      "_hp",
+      "ssh_deploy_creep",
+      "_switch_creep_mode",
+      "set_btns",
+      "get_targets",
+      "do_implant",
+      "_bases_for",
+      "implant_one",
+      "deploy_one",
+      "do_deploy",
+      "spread_one",
+      "do_spread",
+      "do_check",
+      "do_exec",
+      "do_kill",
+      "ssh_back_log_msg",
+      "do_ssh_backdoor",
+      "do_ssh_back_check",
+      "c_hb_msg",
+      "_heartbeat_after",
+      "toggle_creep_hb",
+      "_domain_init"
+    ],
+    "OpsTab": [
+      "_exec_cmd",
+      "_bak_dir",
+      "_open_bak_dir",
+      "_switch_bak_mode",
+      "do_backup",
+      "do_restore",
+      "_ssh_connect",
+      "do_scan",
+      "_db_cmd",
+      "do_db_show",
+      "do_db_create",
+      "do_db_tables",
+      "do_db_data",
+      "do_db_sql",
+      "do_db_dump",
+      "do_db_chpass",
+      "do_harden",
+      "af_log_msg",
+      "af_scan_remote",
+      "af_scan_local",
+      "af_refresh_tree",
+      "af_deploy_patch",
+      "_af_deploy",
+      "_ban_cmd",
+      "_get_ep_port",
+      "do_ipban",
+      "do_ipunban",
+      "do_ipban_list",
+      "do_ipban_batch",
+      "_switch_sb_mode",
+      "_open_sb_dir",
+      "toggle_sched_backup",
+      "do_discover",
+      "do_ssh_test",
+      "do_ssh_chpass",
+      "do_ssh_cmd",
+      "do_ssh_batch",
+      "do_ps",
+      "do_kill_proc",
+      "do_block_port",
+      "do_phpinfo",
+      "pi_refresh",
+      "pi_search_text",
+      "_domain_init"
+    ],
+    "MachinesTab": [
+      "_load",
+      "_save",
+      "refresh",
+      "save_current",
+      "load_selected",
+      "launch_selected_tools",
+      "delete_selected",
+      "_domain_init"
+    ],
+    "ToolsTab": [
+      "_log_widget",
+      "ggc_refresh",
+      "ggc_search",
+      "ggc_fill",
+      "ggc_generate",
+      "df_check",
+      "df_parse_pi",
+      "br_load",
+      "br_run",
+      "_domain_init"
+    ],
+    "AWDToolkit": [
+      "_apply_conn",
+      "_apply_conn_ops",
+      "_refresh_status",
+      "_one_click_workflow",
+      "_run_workflow",
+      "_log_workflow",
+      "show_help",
+      "_refresh_dashboard",
+      "on_close"
+    ]
+  }
+}

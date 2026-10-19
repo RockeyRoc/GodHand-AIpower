@@ -1,0 +1,24 @@
+{
+  "baseline": {
+    "main.py": "70cffdb4838d807d4e4dca985b46d53dfe8e314908310b0d967cab494a2555b3",
+    "main_work.py": "92cad55ffb7828b6a84283b643be5f5b5775f2e5a1c6aa5ea42449d0c94c5871"
+  },
+  "merged_methods": [
+    "build_discover",
+    "do_discover",
+    "build_ssh",
+    "do_ssh_test",
+    "do_ssh_chpass",
+    "do_ssh_cmd",
+    "do_ssh_batch",
+    "build_process",
+    "do_ps",
+    "do_kill_proc",
+    "do_block_port",
+    "build_phpinfo",
+    "do_phpinfo",
+    "pi_refresh",
+    "pi_search_text"
+  ],
+  "tool_class": "ToolsTab"
+}

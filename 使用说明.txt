@@ -1,0 +1,14 @@
+GodHand 使用说明
+
+1. 源码运行 main_work.py，或启动便携包 GodHand.exe。不要单独移动 EXE，保留 _runtime。
+2. 原 WAF、Flag、监控、通信、运维、机子管理入口继续使用。运维新增主机发现、SSH、进程、PHP 信息四页；工具页保留批量脚本及 PHP 工具。
+3. 工具管理中搜索能力，设置参数 JSON 和目标标识，点击启动；任务列表显示状态、结果及日志，长任务可以停止。
+4. AI 中枢中先停止服务，填写允许的主机 IP/标识和提交平台地址，保存后启动；复制凭据至 Agent 启动终端的 GODHAND_MCP_TOKEN 环境变量，再导出 Claude Code 或 Codex 示例配置。
+5. 所有 Agent 共用同一个 /mcp 地址，唯一工具为 godhand(action, arguments)。先调用 action=echo，再用 capabilities/targets/tools 读取能力、目标和依赖；run/run_tool 提交任务，task/logs 查询，cancel 停止。
+6. 随窗口启动的服务随窗口结束；附着独立服务时关窗口保留服务，点击停止会显式结束服务。无界面运行：GodHand.exe --mcp。
+7. 管理工具/GodHand 保存服务配置、任务数据库和加密凭据。发布包不含比赛数据。不同比赛可用 --data-dir 指定不同管理数据目录。
+8. 缺少 PHP、phpggc 或脚本解释器时按工具页提示补充；比赛期间不会自动下载。Tabby/WinSCP 显示已启动不代表 SSH 已连接。
+9. 重启后 needs_review 表示远程修改结果待核对，先检查靶机再重试。unknown 的 Flag 提交先检查平台记录，避免盲目重复提交。
+10. 详细配置和故障处理见 docs/MCP接入.md；本次验证范围见 docs/统一入口验收.md。
+
+GodHand 1.1.0：本次采用新的 GodHand Logo。开发版/便携版已配套 tools/Tabby 与 tools/WinSCP。解释器和 phpggc 在 工具管理 → 工具路径 配置；留空自动检查扩展目录与 PATH。PHP/phpggc 资源不随基础包附带。

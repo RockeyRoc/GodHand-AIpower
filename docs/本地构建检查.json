@@ -1,0 +1,106 @@
+{
+  "date": "2026-10-19",
+  "local_test_groups": 12,
+  "local_tests": "passed",
+  "ui": {
+    "tabs": [
+      "  📊 总览  ",
+      "  🛡 WAF管理  ",
+      "  🎯 Flag获取  ",
+      "  💡 靶机监控  ",
+      "  🕷 木马上传  ",
+      "  🔧 综合运维  ",
+      "  🖥 机子管理  ",
+      "工具管理",
+      "AI 中枢"
+    ],
+    "legacy_ops": 11
+  },
+  "frozen": {
+    "health": {
+      "name": "GodHand",
+      "version": "1.0.0",
+      "pid": 56668,
+      "url": "http://127.0.0.1:18765/mcp",
+      "operations": 75,
+      "last_request": 1792421312.0838034,
+      "error": "",
+      "tasks": 0
+    },
+    "mcp_tools": 11,
+    "worker_status": "succeeded",
+    "exit_code": 0
+  },
+  "source_parity": [
+    {
+      "module": "AI中枢.core",
+      "source_match": true,
+      "sha256": "005dce2839cac90162c4684ca34e26e0994a8bc4c74661573ce66e96de66e473"
+    },
+    {
+      "module": "AI中枢.service",
+      "source_match": true,
+      "sha256": "a83cdc726b48b6ca84e1ea5dd492fac26501fa341ccb6c49e58a4552c6c218e8"
+    },
+    {
+      "module": "AI中枢.worker",
+      "source_match": true,
+      "sha256": "873adcbc42e7dd3d53ba513f507925c2c2c9730b4cec798f5201a4dd2358ada3"
+    },
+    {
+      "module": "AI中枢.server",
+      "source_match": true,
+      "sha256": "8943dd6d0cbee73f5557c4a92874c46c8d6b15b318ab4006356abfead4bd565f"
+    },
+    {
+      "module": "AI中枢.entry",
+      "source_match": true,
+      "sha256": "5388b968882baf0797ce6cec9b91be7354ecfb66116c9ea91f04d2d7200df9b3"
+    },
+    {
+      "module": "AI中枢.snapshot",
+      "source_match": true,
+      "sha256": "a660d3ce116ba75d623539f6ce2c8353aab6e3f75b5b456adcad9ff51812fd0d"
+    },
+    {
+      "module": "AI中枢.operations",
+      "source_match": true,
+      "sha256": "335800927caf341e913d1d3287ca0d2a9bdf254a267bbe1942760fac345272f3"
+    },
+    {
+      "module": "AI中枢.business",
+      "source_match": true,
+      "sha256": "e47649b790f0646ae418c954c307aaa71656a1f443d15942faad35c0082b0f97"
+    },
+    {
+      "module": "AI中枢.gui",
+      "source_match": true,
+      "sha256": "ed5fa184ac6186358ebae68039b493fac015be50fb2b2c509dd43fc5e134ea8b"
+    },
+    {
+      "module": "AI中枢.gui_bridge",
+      "source_match": true,
+      "sha256": "3e8c7871128873eed6a9956ef0415a858d21db628fb3dec40836207695c92c90"
+    },
+    {
+      "module": "AI中枢.submission",
+      "source_match": true,
+      "sha256": "c0cf02ad9eff83546ee5d716ead34c87a12f5495653b31b589e049b5cb5d4a2b"
+    },
+    {
+      "module": "AI中枢.templates",
+      "source_match": true,
+      "sha256": "943283fa886931593b2cf7a7aec156f2f1a23f660befed94834dc5c00c74a33b"
+    },
+    {
+      "module": "工具管理模块.registry",
+      "source_match": true,
+      "sha256": "e7712013657b55da031fa608fed250841204c4875f183680dbfef477103a7678"
+    }
+  ],
+  "clients": {
+    "claude_code": "2.1.299 HTTP Connected (isolated local-scope config)",
+    "codex": "0.163.0-alpha.10.2 tools discovered; execution blocked by client approval policy"
+  },
+  "remote_validation": "deferred by user"
+}

@@ -1,0 +1,56 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# PyInstaller 构建产物
+build/
+dist/
+*.spec
+YL_Phantom.exe
+
+# 密钥与配置（运行时自动生成）
+rsa_keys.json
+管理工具/waf_key.txt
+管理工具/machines.json
+管理工具/WinSCP.ini
+管理工具/Tabby/
+
+# GodHand runtime state
+管理工具/GodHand/
+_runtime/
+*.exe
+*.log
+rsa_keys.json
+__pycache__/
+GodHand-test-data/
+
+# Local state, backups and credentials
+/管理工具/
+/攻击模块/flag_hunter_config.json
+/攻击模块/known_flags.json
+/防御模块/backup/
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.dpapi
+*.sqlite
+*.sqlite3
+*.sqlite3-*
+*.db
+*.bak
+*.backup
+
+# Installed third-party applications and Python dependencies
+/tools/
+/AI中枢/vendor/
+.venv/
+venv/
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

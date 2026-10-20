@@ -264,7 +264,7 @@ class DefenseTests(unittest.TestCase):
         env = FakeEnvironment(root / "report-task", root)
         result = engine.execute("defense_report", {"ip": "local"}, {"task_ids": []}, env)
         self.assertEqual(1, len(result["return"]["tasks"]))
-        self.assertEqual("1.5.0", result["return"]["product_version"])
+        self.assertEqual("1.6.0", result["return"]["product_version"])
         self.assertTrue(Path(result["outputs"]["json_report"]).is_file())
         self.assertTrue(Path(result["outputs"]["markdown_report"]).is_file())
         report = Path(result["outputs"]["json_report"]).read_text(encoding="utf-8")

@@ -11,6 +11,7 @@ def _main(argv=None):
     parser.add_argument('--worker',action='store_true');parser.add_argument('--request')
     parser.add_argument('--mcp',action='store_true');parser.add_argument('--mcp-stdio',action='store_true')
     parser.add_argument('--install-codex-config',choices=['user','project'])
+    parser.add_argument('--codex-transport',choices=['stdio','http'],default='stdio')
     parser.add_argument('--doctor',action='store_true')
     parser.add_argument('--check-ui',action='store_true');parser.add_argument('--data-dir')
     args=parser.parse_args(argv)
@@ -20,12 +21,14 @@ def _main(argv=None):
         return worker(args.request)
     from .core import Store
     store=Store(data_dir=args.data_dir or os.environ.get('GODHAND_DATA_DIR'))
+    from .endpoint import ensure_fixed_endpoint
+    ensure_fixed_endpoint(store)
     if args.mcp_stdio:
         from .stdio_bridge import serve
         return serve(store)
     if args.install_codex_config:
         from .clientconfig import install_codex
-        print(json.dumps(install_codex(store,args.install_codex_config),ensure_ascii=False,indent=2));return 0
+        print(json.dumps(install_codex(store,args.install_codex_config,transport=args.codex_transport),ensure_ascii=False,indent=2));return 0
     if args.doctor:
         from .operations import catalogue
         from 工具管理模块.registry import Registry

@@ -1,3 +1,4 @@
 [mcp_servers.godhand]
-url = "http://127.0.0.1:18765/mcp"
-bearer_token_env_var = "GODHAND_MCP_TOKEN"
+command = "C:/CTF/GodHand/GodHand.exe"
+args = ["--mcp-stdio", "--data-dir", "C:/CTF/GodHand/管理工具/GodHand"]
+startup_timeout_sec = 30

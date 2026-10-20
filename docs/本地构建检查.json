@@ -102,5 +102,8 @@
     "claude_code": "2.1.299 HTTP Connected (isolated local-scope config)",
     "codex": "0.163.0-alpha.10.2 tools discovered; execution blocked by client approval policy"
   },
-  "remote_validation": "deferred by user"
+  "remote_validation": "deferred by user",
+  "record_type": "historical",
+  "applicable_version": "1.0.0",
+  "current_verification": "1.6.0-验收记录.md"
 }

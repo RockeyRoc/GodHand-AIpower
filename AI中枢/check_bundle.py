@@ -16,7 +16,7 @@ def normalize(code):
 def main():
     from PyInstaller.loader.pyimod01_archive import ZlibArchiveReader
     root=Path(__file__).resolve().parent.parent;reader=ZlibArchiveReader(sys.argv[1]);rows=[]
-    modules=['AI中枢.'+name for name in ['core','service','worker','server','entry','snapshot','operations','business','gui','gui_bridge','submission','templates']]+['工具管理模块.registry']
+    modules=['AI中枢.'+name for name in ['core','service','worker','server','entry','snapshot','operations','business','gui','hub_gui','endpoint','version','clientconfig','stdio_bridge','defense_gui','targets','targets_gui','target_store','storage','gui_bridge','submission','templates']]+['工具管理模块.registry','防御模块.engine','防御模块.aoi']
     for module in modules:
         source=root/Path(*module.split('.')).with_suffix('.py');code=reader.extract(module)
         same=any(normalize(code)==normalize(compile(source.read_text(encoding='utf-8-sig'),str(source),'exec',optimize=optimization)) for optimization in (0,1,2))

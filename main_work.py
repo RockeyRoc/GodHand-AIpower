@@ -8,6 +8,8 @@ if __name__ == '__main__' and any(flag in _gh_sys.argv for flag in ('--mcp','--m
     from AI中枢.entry import main as _gh_main
     raise SystemExit(_gh_main())
 
+from AI中枢.version import VERSION as GODHAND_VERSION
+
 import os, sys, base64, json, ipaddress, time, re, threading, queue, ssl, subprocess
 import urllib.request, urllib.parse, urllib.error
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -5485,7 +5487,7 @@ class AWDToolkit:
         global _UI
         self._closing = False
         self._dispatcher = _UI = UiDispatcher(self.root)
-        self.root.title('GodHand — AWD 工具集成')
+        self.root.title(f'GodHand {GODHAND_VERSION} — AWD 工具集成')
         try:
             from AI中枢.branding import logo_photo
             self._window_logo = logo_photo(self.root, 128)
@@ -5549,7 +5551,7 @@ class AWDToolkit:
         right.pack(side=tk.RIGHT, padx=(0, 16), pady=6)
         tk.Label(right, text='SECURITY OPS CONSOLE', font=('微软雅黑', 9),
             fg='#00d4ff', bg=NEO['bg']).pack(anchor=tk.E)
-        tk.Label(right, text='GodHand v1.4.0', font=('微软雅黑', 9),
+        tk.Label(right, text=f'GodHand v{GODHAND_VERSION}', font=('微软雅黑', 9),
             fg='#6b7f9e', bg=NEO['bg']).pack(anchor=tk.E)
         tk.Label(right, text='◉ ONLINE', font=('微软雅黑', 8),
             fg='#00ff9d', bg=NEO['bg']).pack(anchor=tk.E)
@@ -5667,7 +5669,7 @@ class AWDToolkit:
             avatar_lbl.image = avatar_img
             avatar_lbl.pack(side=tk.LEFT, padx=(0,4))
         except Exception: pass
-        tb.Label(help_frame, text='GodHand v1.4.0 | 防御中心 · 工具管理 · MCP AI 中枢', font=('微软雅黑', 8), foreground='#6b7f9e').pack(side=tk.LEFT)
+        tb.Label(help_frame, text=f'GodHand v{GODHAND_VERSION} | 防御中心 · 工具管理 · MCP AI 中枢', font=('微软雅黑', 8), foreground='#6b7f9e').pack(side=tk.LEFT)
         self.status_bar = tb.Label(help_frame, text='', font=('微软雅黑', 8), foreground='#00d4ff')
         self.status_bar.pack(side=tk.LEFT, padx=8)
         tb.Button(help_frame, text='❓ 使用帮助', command=self.show_help).pack(side=tk.RIGHT)
@@ -6065,72 +6067,57 @@ class AWDToolkit:
         text.tag_config('code', font=('Consolas', 9))
         text.tag_config('sep', font=('Consolas', 7))
 
-        HELP = """══════════════════════════════════════════════════════════
- GodHand 作战指挥台 v1.4.0
- AWD 攻防演练统一管理平台
-══════════════════════════════════════════════════════════
+        HELP = f"""GodHand {GODHAND_VERSION} 使用帮助
 
-╔══════════════════════════════════════════════════════════╗
-║  本工具仅用于授权安全测试，请遵守相关法律法规        ║
-╚══════════════════════════════════════════════════════════╝
+把靶机、AWD 工具和 AI 调用放到同一个工作台。
+适用于已获授权的 AWD、CTF 及自建靶场。
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-                        免 责 声 明
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+开始使用
 
-1. 本工具仅限用于经授权的安全测试、CTF竞赛、AWD攻防演练等合法场景
-2. 严禁用于未经授权的网络攻击、入侵、数据窃取等违法行为
-3. 使用者需自行承担所有法律责任，开发者不承担任何连带责任
-4. 下载、安装、使用本工具即视为已阅读并同意以上条款
-5. 如有违反，一切后果由使用者自行承担
+1. 添加靶机
+打开“机子管理”，保存目标地址与连接资料，确认记录出现在列表中。
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-                        功 能 介 绍
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. 选择允许目标
+打开“AI 中枢”，停止服务，点击“选择允许目标”并勾选靶机。
+确定后保存配置，再启动服务。页面显示已选目标数量。
 
-▸ 📊 Dashboard 总览
-  · 全局状态卡片：目标数/存活数/Flag数/告警数/WAF部署/木马植入
-  · 快捷操作：部署WAF/获取Flag/一键加固/备份网站
-  · 活动趋势图 + 操作日志实时记录
+3. 接入 Codex
+在“Codex 接入”选择配置位置，点击“写入 Codex 配置”。
+到 Codex 的 MCP 设置重启 godhand，或重新打开 Codex。
+默认 stdio 无需设置令牌；配置中使用本机程序与数据目录的完整路径。
 
-▸ 🛡️ WAF管理
-  · 批量部署 WAF 防护脚本到多个靶机
-  · 检查/更新/卸载 WAF 状态
-  · 执行日志/规则编辑/攻击流量分析/心跳监控
+4. 向 AI 描述任务
+例如：“使用 GodHand 检查连接，列出当前允许操作的靶机。”
+AI 会查询能力参数，提交任务后继续查看执行结果。
 
-▸ 🎯 Flag获取
-  · 周期性批量读取靶机 Flag
-  · 支持 RSA 加密通信 + 流量混淆
-  · 自动提交到平台 + 手动提交模式
+5. 查看结果
+在“工具管理”选择任务查看状态和日志；耗时任务可停止。
+后台与协议状态可在 AI 中枢点击“连接自检”查看。
 
-▸ 💡 靶机监控
-  · 实时监控文件变更/连接/告警
-  · 攻击者TOP排行
-  · 文件管理（浏览/编辑/上传/下载）
+常用入口
 
-▸ 🕷️ 木马上传
-  · 蠕虫马(自复制)/不死马(常驻)/MD5马(免杀)/内存马(无文件)
-  · 一键植入/部署/扩散/清除
-  · SSH后门 + 心跳检测
+WAF 管理：部署、检查、规则与流量。
+Flag 获取：通道检查、轮次获取、提交与历史。
+靶机监控：告警、日志与远程文件。
+通信与部署：使用既有部署及连接能力。
+综合运维：备份、源码、数据库、SSH、进程与 IP 管理。
+防御中心：部署 AoiAWD 探针并打开监测页。
+工具管理：Tabby、WinSCP、脚本、依赖与任务。
 
-▸ 🔧 综合运维
-  · 备份还原/木马查杀/数据库/加固基线
-  · 木马查杀/数据库/加固基线/自动修复
-  · IP黑名单/定时备份
-  · 防御中心：Fail2Ban、Watchbird、Lynis、YARA、AIDE 与证据报告
+连接与数据
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-                       产 品 说 明
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+HTTP 固定地址：http://127.0.0.1:18765/mcp。
+其他客户端的配置与凭据命令在 AI 中枢“高级设置”中导出或复制。
+当前比赛数据默认保存在 管理工具/GodHand，升级时保留整个目录。
+更换比赛前先停止原后台，再选择对应数据目录。
 
-  产品: GodHand
-  版本: 1.4.0
-  来源与鸣谢: docs/来源与鸣谢.md
-  用途: AWD攻防演练 / 安全测试 / CTF竞赛
+更多说明
 
-══════════════════════════════════════════════════════════
-              Powered by ttkbootstrap · Python
-══════════════════════════════════════════════════════════"""
+README.md：快速开始与文档导航。
+skill.md：AI 调用指南及技能安装。
+docs/MCP接入.md：连接方式、接口和排查。
+docs/来源与鸣谢.md：作者、上游和许可证。
+"""
 
         text.config(state=tk.NORMAL)
         text.insert(tk.END, HELP)

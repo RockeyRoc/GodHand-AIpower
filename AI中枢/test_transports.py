@@ -31,9 +31,9 @@ class Transports(unittest.TestCase):
     def test_version_is_single_source(self):
         import AI中枢
         from . import version
-        self.assertEqual('1.5.0', VERSION)
+        self.assertEqual('1.6.0', VERSION)
         self.assertEqual(VERSION, AI中枢.VERSION)
-        self.assertEqual((1, 5, 0, 0), version.numeric())
+        self.assertEqual((1, 6, 0, 0), version.numeric())
 
     def test_codex_install_preserves_other_tables_and_is_idempotent(self):
         target = self.path / 'config.toml'
@@ -42,21 +42,21 @@ class Transports(unittest.TestCase):
         data = tomllib.loads(target.read_text(encoding='utf-8'))
         self.assertEqual('keep-me', data['model']['name'])
         self.assertIn('other', data['mcp_servers'])
-        self.assertTrue(data['mcp_servers']['godhand']['url'].endswith('/mcp'))
-        self.assertEqual('GODHAND_MCP_TOKEN', data['mcp_servers']['godhand']['bearer_token_env_var'])
+        self.assertTrue(Path(data['mcp_servers']['godhand']['command']).is_absolute())
+        self.assertIn('--mcp-stdio', data['mcp_servers']['godhand']['args'])
         self.assertTrue(Path(result['backup']).is_file())
         install_codex(self.store, 'user', path=target)
         text = target.read_text(encoding='utf-8')
         self.assertEqual(1, text.count('[mcp_servers.godhand]'))
-        self.assertEqual(1, text.count('bearer_token_env_var'))
+        self.assertEqual(1, text.count('command ='))
 
     def test_codex_install_replaces_stale_entry(self):
         target = self.path / 'config.toml'
         target.write_text('[mcp_servers.godhand]\nurl = "http://127.0.0.1:1/mcp"\nbearer_token_env_var = "OLD"\n\n[other]\nflag = true\n', encoding='utf-8')
         install_codex(self.store, 'project', path=target)
         data = tomllib.loads(target.read_text(encoding='utf-8'))
-        self.assertTrue(data['mcp_servers']['godhand']['url'].endswith(':' + str(self.store.config['port']) + '/mcp'))
-        self.assertEqual('GODHAND_MCP_TOKEN', data['mcp_servers']['godhand']['bearer_token_env_var'])
+        self.assertEqual(str(self.store.path), data['mcp_servers']['godhand']['args'][-1])
+        self.assertIn('--mcp-stdio', data['mcp_servers']['godhand']['args'])
         self.assertTrue(data['other']['flag'])
 
     def test_import_requires_selection_by_default(self):
@@ -70,7 +70,7 @@ class Transports(unittest.TestCase):
         install_codex(self.store, 'user', path=target)
         text = target.read_text(encoding='utf-8')
         self.assertEqual(1, text.count('[mcp_servers.godhand]'))
-        self.assertEqual(1, text.count('url ='))
+        self.assertEqual(1, text.count('command ='))
 
     def test_auto_authorize_import_when_enabled(self):
         self.store.save_config({'auto_authorize_imports': True})

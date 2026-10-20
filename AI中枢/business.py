@@ -4689,7 +4689,7 @@ class AWDToolkit(ActorState):
         text.tag_config('h2', font=('Consolas', 11, 'bold'), spacing3=6)
         text.tag_config('code', font=('Consolas', 9))
         text.tag_config('sep', font=('Consolas', 7))
-        HELP = '══════════════════════════════════════════════════════════\n GodHand 作战指挥台 v1.3.0\n AWD 攻防演练统一管理平台\n══════════════════════════════════════════════════════════\n\n╔══════════════════════════════════════════════════════════╗\n║  本工具仅用于授权安全测试，请遵守相关法律法规        ║\n╚══════════════════════════════════════════════════════════╝\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n                        免 责 声 明\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n1. 本工具仅限用于经授权的安全测试、CTF竞赛、AWD攻防演练等合法场景\n2. 严禁用于未经授权的网络攻击、入侵、数据窃取等违法行为\n3. 使用者需自行承担所有法律责任，开发者不承担任何连带责任\n4. 下载、安装、使用本工具即视为已阅读并同意以上条款\n5. 如有违反，一切后果由使用者自行承担\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n                        功 能 介 绍\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n▸ 📊 Dashboard 总览\n  · 全局状态卡片：目标数/存活数/Flag数/告警数/WAF部署/木马植入\n  · 快捷操作：部署WAF/获取Flag/一键加固/备份网站\n  · 活动趋势图 + 操作日志实时记录\n\n▸ 🛡️ WAF管理\n  · 批量部署 WAF 防护脚本到多个靶机\n  · 检查/更新/卸载 WAF 状态\n  · 执行日志/规则编辑/攻击流量分析/心跳监控\n\n▸ 🎯 Flag获取\n  · 周期性批量读取靶机 Flag\n  · 支持 RSA 加密通信 + 流量混淆\n  · 自动提交到平台 + 手动提交模式\n\n▸ 💡 靶机监控\n  · 实时监控文件变更/连接/告警\n  · 攻击者TOP排行\n  · 文件管理（浏览/编辑/上传/下载）\n\n▸ 🕷️ 木马上传\n  · 蠕虫马(自复制)/不死马(常驻)/MD5马(免杀)/内存马(无文件)\n  · 一键植入/部署/扩散/清除\n  · SSH后门 + 心跳检测\n\n▸ 🔧 综合运维\n  · 备份还原/木马查杀/数据库/加固基线\n  · 木马查杀/数据库/加固基线/自动修复\n  · IP黑名单/定时备份\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n                       产 品 说 明\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n  产品: GodHand\n  版本: 1.3.0\n  来源与鸣谢: docs/来源与鸣谢.md\n  用途: AWD攻防演练 / 安全测试 / CTF竞赛\n\n══════════════════════════════════════════════════════════\n              Powered by ttkbootstrap · Python\n══════════════════════════════════════════════════════════'
+        HELP = f'GodHand {GODHAND_VERSION} 使用帮助\n\n把靶机、AWD 工具和 AI 调用放到同一个工作台。\n适用于已获授权的 AWD、CTF 及自建靶场。\n\n开始使用\n\n1. 添加靶机\n打开“机子管理”，保存目标地址与连接资料，确认记录出现在列表中。\n\n2. 选择允许目标\n打开“AI 中枢”，停止服务，点击“选择允许目标”并勾选靶机。\n确定后保存配置，再启动服务。页面显示已选目标数量。\n\n3. 接入 Codex\n在“Codex 接入”选择配置位置，点击“写入 Codex 配置”。\n到 Codex 的 MCP 设置重启 godhand，或重新打开 Codex。\n默认 stdio 无需设置令牌；配置中使用本机程序与数据目录的完整路径。\n\n4. 向 AI 描述任务\n例如：“使用 GodHand 检查连接，列出当前允许操作的靶机。”\nAI 会查询能力参数，提交任务后继续查看执行结果。\n\n5. 查看结果\n在“工具管理”选择任务查看状态和日志；耗时任务可停止。\n后台与协议状态可在 AI 中枢点击“连接自检”查看。\n\n常用入口\n\nWAF 管理：部署、检查、规则与流量。\nFlag 获取：通道检查、轮次获取、提交与历史。\n靶机监控：告警、日志与远程文件。\n通信与部署：使用既有部署及连接能力。\n综合运维：备份、源码、数据库、SSH、进程与 IP 管理。\n防御中心：部署 AoiAWD 探针并打开监测页。\n工具管理：Tabby、WinSCP、脚本、依赖与任务。\n\n连接与数据\n\nHTTP 固定地址：http://127.0.0.1:18765/mcp。\n其他客户端的配置与凭据命令在 AI 中枢“高级设置”中导出或复制。\n当前比赛数据默认保存在 管理工具/GodHand，升级时保留整个目录。\n更换比赛前先停止原后台，再选择对应数据目录。\n\n更多说明\n\nREADME.md：快速开始与文档导航。\nskill.md：AI 调用指南及技能安装。\ndocs/MCP接入.md：连接方式、接口和排查。\ndocs/来源与鸣谢.md：作者、上游和许可证。\n'
         text.config(state=tk.NORMAL)
         text.insert(tk.END, HELP)
         text.config(state=tk.DISABLED)
@@ -4738,7 +4738,7 @@ class AWDToolkit(ActorState):
         self._dispatcher.close()
         self.root.destroy()
     _fields = {'_closing': {'kind': 'literal', 'default': True}, 'global_conn_mode': {'kind': 'value', 'default': 'webshell'}, 'global_ip': {'kind': 'value', 'default': ''}, 'global_port': {'kind': 'value', 'default': '80'}, 'global_shell': {'kind': 'value', 'default': '/web/shell.php'}, 'global_pass': {'kind': 'value', 'default': 'cmd'}, 'global_ssh_port': {'kind': 'value', 'default': '2202'}, 'global_ssh_user': {'kind': 'value', 'default': 'ctf'}, 'root': {'kind': 'value', 'default': ''}, '_dispatcher': {'kind': 'value', 'default': ''}, '_banner_logo': {'kind': 'value', 'default': ''}, 'banner': {'kind': 'value', 'default': ''}, 'conn_frame': {'kind': 'value', 'default': ''}, 'btn_apply': {'kind': 'value', 'default': ''}, 'btn_refresh_status': {'kind': 'value', 'default': ''}, 'btn_workflow': {'kind': 'value', 'default': ''}, 'waf': {'kind': 'value', 'default': ''}, 'flag': {'kind': 'value', 'default': ''}, 'mon': {'kind': 'value', 'default': ''}, 'creep': {'kind': 'value', 'default': ''}, 'ops': {'kind': 'value', 'default': ''}, 'machines': {'kind': 'value', 'default': ''}, 'status_bar': {'kind': 'value', 'default': ''}, '_window_logo': {'kind': 'value', 'default': ''}, 'dash': {'kind': 'literal', 'default': None}, '_last_dashboard_values': {'kind': 'value', 'default': ''}}
-def _factory_5444f870c03d(args, function, holder, self, token):
+def _factory_21dd38d91b09(args, function, holder, self, token):
 
     def invoke():
         if holder:
@@ -4747,16 +4747,16 @@ def _factory_5444f870c03d(args, function, holder, self, token):
             function(*args)
         self._cancelled.discard(token)
     return invoke
-CLOSURES['UiDispatcher._schedule.<locals>.invoke@166']=_factory_5444f870c03d
-def _factory_7659d1a59178(held, locks):
+CLOSURES['UiDispatcher._schedule.<locals>.invoke@168']=_factory_21dd38d91b09
+def _factory_26535ab8a89b(held, locks):
 
     def hold(path):
         if path not in held:
             locks.enter_context(_hold_directory(path))
             held.add(path)
     return hold
-CLOSURES['restore_local_archive.<locals>.hold@281']=_factory_7659d1a59178
-def _factory_d26abf3b30c6(ensure_directory, hold, root):
+CLOSURES['restore_local_archive.<locals>.hold@283']=_factory_26535ab8a89b
+def _factory_5c9ca6476847(ensure_directory, hold, root):
 
     def ensure_directory(path):
         if path == root:
@@ -4766,8 +4766,8 @@ def _factory_d26abf3b30c6(ensure_directory, hold, root):
         path.mkdir(exist_ok=True)
         hold(path)
     return ensure_directory
-CLOSURES['restore_local_archive.<locals>.ensure_directory@336']=_factory_d26abf3b30c6
-def _factory_2d8b2d7c4ff2(on_deploy, vd, win):
+CLOSURES['restore_local_archive.<locals>.ensure_directory@338']=_factory_5c9ca6476847
+def _factory_b8a01961070a(on_deploy, vd, win):
 
     def do_it():
         vals = {k: v.get().strip() for k, v in vd.items()}
@@ -4782,8 +4782,8 @@ def _factory_2d8b2d7c4ff2(on_deploy, vd, win):
         win.destroy()
         on_deploy(vals)
     return do_it
-CLOSURES['ssh_deploy_dialog.<locals>.do_it@613']=_factory_2d8b2d7c4ff2
-def _factory_c509098ea805(self, win):
+CLOSURES['ssh_deploy_dialog.<locals>.do_it@615']=_factory_b8a01961070a
+def _factory_e38153abddfa(self, win):
 
     def do_deploy():
         host = self._waf_deploy_vars['host'].get().strip()
@@ -4847,8 +4847,8 @@ def _factory_c509098ea805(self, win):
                 self.root.after(0, lambda e=e: self.log_self('[FAIL] %s' % e, 'fail'))
         async_run(_deploy)
     return do_deploy
-CLOSURES['WafTab.ssh_deploy_waf.<locals>.do_deploy@1139']=_factory_c509098ea805
-def _factory_308f9cc824de(files, host, port, pwd, self, user, web):
+CLOSURES['WafTab.ssh_deploy_waf.<locals>.do_deploy@1141']=_factory_e38153abddfa
+def _factory_7668fac69d35(files, host, port, pwd, self, user, web):
 
     def _deploy():
         try:
@@ -4871,8 +4871,8 @@ def _factory_308f9cc824de(files, host, port, pwd, self, user, web):
         except Exception as e:
             self.root.after(0, lambda e=e: self.log_self('[FAIL] %s' % e, 'fail'))
     return _deploy
-CLOSURES['WafTab.ssh_deploy_waf.<locals>.do_deploy.<locals>._deploy@1185']=_factory_308f9cc824de
-def _factory_bb3b13635e15(self, win):
+CLOSURES['WafTab.ssh_deploy_waf.<locals>.do_deploy.<locals>._deploy@1187']=_factory_7668fac69d35
+def _factory_4d7df1c60ede(self, win):
 
     def do_create():
         host = self._shell_vars['host'].get().strip()
@@ -4915,8 +4915,8 @@ def _factory_bb3b13635e15(self, win):
                 self.log_self(f'[FAIL] 创建webshell失败: {e}', 'fail')
         async_run(_create)
     return do_create
-CLOSURES['WafTab.ssh_create_shell.<locals>.do_create@1250']=_factory_bb3b13635e15
-def _factory_124189351356(host, port, pwd, self, sh_pass, user):
+CLOSURES['WafTab.ssh_create_shell.<locals>.do_create@1252']=_factory_4d7df1c60ede
+def _factory_8476756111e4(host, port, pwd, self, sh_pass, user):
 
     def _create():
         try:
@@ -4943,14 +4943,14 @@ def _factory_124189351356(host, port, pwd, self, sh_pass, user):
         except Exception as e:
             self.log_self(f'[FAIL] 创建webshell失败: {e}', 'fail')
     return _create
-CLOSURES['WafTab.ssh_create_shell.<locals>.do_create.<locals>._create@1261']=_factory_124189351356
-def _factory_682c74ad0691(self):
+CLOSURES['WafTab.ssh_create_shell.<locals>.do_create.<locals>._create@1263']=_factory_8476756111e4
+def _factory_d7ba794f7365(self):
 
     def log_traf(msg, tag='info'):
         self.root.after(0, lambda: (self.traf_text.config(state=tk.NORMAL), self.traf_text.insert(tk.END, msg + '\n', tag), self.traf_text.see(tk.END), self.traf_text.config(state=tk.DISABLED)))
     return log_traf
-CLOSURES['WafTab.fetch_traffic.<locals>.log_traf@1643']=_factory_682c74ad0691
-def _factory_9094c69b3a0d(https, ip_counter, log_path, log_traf, self, targets, timeout):
+CLOSURES['WafTab.fetch_traffic.<locals>.log_traf@1645']=_factory_d7ba794f7365
+def _factory_66090826166b(https, ip_counter, log_path, log_traf, self, targets, timeout):
 
     def run():
         for ip in targets:
@@ -4971,14 +4971,14 @@ def _factory_9094c69b3a0d(https, ip_counter, log_path, log_traf, self, targets, 
         for i, (attacker, cnt) in enumerate(sorted(ip_counter.items(), key=lambda x: -x[1])[:10], 1):
             log_traf(f'  #{i:<3} {attacker:<16} ({cnt} 次)', 'ip')
     return run
-CLOSURES['WafTab.fetch_traffic.<locals>.run@1651']=_factory_9094c69b3a0d
-def _factory_8da76379239f(self, stopper):
+CLOSURES['WafTab.fetch_traffic.<locals>.run@1653']=_factory_66090826166b
+def _factory_541541581374(self, stopper):
 
     def hb_log(msg, tag='info'):
         self._heartbeat_after(stopper, 0, lambda: (self.hb_text.config(state=tk.NORMAL), self.hb_text.insert(tk.END, f"[{datetime.now().strftime('%H:%M:%S')}] {msg}\n", tag), self.hb_text.see(tk.END), self.hb_text.config(state=tk.DISABLED)))
     return hb_log
-CLOSURES['WafTab.toggle_heartbeat.<locals>.hb_log@1700']=_factory_8da76379239f
-def _factory_c9d0b0418574(hb_log, https, interval, self, stopper, targets, timeout):
+CLOSURES['WafTab.toggle_heartbeat.<locals>.hb_log@1702']=_factory_541541581374
+def _factory_1dafd4fd61e7(hb_log, https, interval, self, stopper, targets, timeout):
 
     def run():
         while not stopper.is_set():
@@ -5006,8 +5006,8 @@ def _factory_c9d0b0418574(hb_log, https, interval, self, stopper, targets, timeo
                 time.sleep(1)
         hb_log('心跳监控已停止', 'info')
     return run
-CLOSURES['WafTab.toggle_heartbeat.<locals>.run@1708']=_factory_c9d0b0418574
-def _factory_4d75546e03ce(https, self, timeout):
+CLOSURES['WafTab.toggle_heartbeat.<locals>.run@1710']=_factory_1dafd4fd61e7
+def _factory_60dddaef994d(https, self, timeout):
 
     def check(ip):
         try:
@@ -5016,8 +5016,8 @@ def _factory_4d75546e03ce(https, self, timeout):
         except Exception:
             return (ip, False)
     return check
-CLOSURES['WafTab.toggle_heartbeat.<locals>.run.<locals>.check@1712']=_factory_4d75546e03ce
-def _factory_0020ed1aadaf(self):
+CLOSURES['WafTab.toggle_heartbeat.<locals>.run.<locals>.check@1714']=_factory_60dddaef994d
+def _factory_18a36fbfd8b1(self):
 
     def _test():
         import requests
@@ -5052,8 +5052,8 @@ def _factory_0020ed1aadaf(self):
         except Exception as e:
             self.root.after(0, lambda e=e: self.log_self(f'[X] Webshell通道错误: {str(e)[:60]}', 'error'))
     return _test
-CLOSURES['FlagTab.test_conn.<locals>._test@1960']=_factory_0020ed1aadaf
-def _factory_f32e31612a02(self):
+CLOSURES['FlagTab.test_conn.<locals>._test@1962']=_factory_18a36fbfd8b1
+def _factory_aca720599a19(self):
 
     def do_deploy(vals):
         host, port, user, pwd = (vals['host'], vals['port'], vals['user'], vals['pwd'])
@@ -5075,8 +5075,8 @@ def _factory_f32e31612a02(self):
                 self.root.after(0, lambda e=e: self.log_self(f'[FAIL] {e}', 'fail'))
         async_run(_deploy)
     return do_deploy
-CLOSURES['FlagTab.ssh_deploy_flag.<locals>.do_deploy@2003']=_factory_f32e31612a02
-def _factory_e1a2e9cb80a4(host, port, pwd, self, sh_pass, user):
+CLOSURES['FlagTab.ssh_deploy_flag.<locals>.do_deploy@2005']=_factory_aca720599a19
+def _factory_7bdfb3faf67a(host, port, pwd, self, sh_pass, user):
 
     def _deploy():
         try:
@@ -5093,14 +5093,14 @@ def _factory_e1a2e9cb80a4(host, port, pwd, self, sh_pass, user):
         except Exception as e:
             self.root.after(0, lambda e=e: self.log_self(f'[FAIL] {e}', 'fail'))
     return _deploy
-CLOSURES['FlagTab.ssh_deploy_flag.<locals>.do_deploy.<locals>._deploy@2006']=_factory_e1a2e9cb80a4
-def _factory_c17bcfbc348a(self):
+CLOSURES['FlagTab.ssh_deploy_flag.<locals>.do_deploy.<locals>._deploy@2008']=_factory_7bdfb3faf67a
+def _factory_8669e51f247a(self):
 
     def gi(e, d):
         return max(1, min(9999, safe_int(self.__dict__[f'entry_{e}'].get().strip(), d)))
     return gi
-CLOSURES['FlagTab.hunt_loop.<locals>.gi@2126']=_factory_c17bcfbc348a
-def _factory_f910b717561e(self):
+CLOSURES['FlagTab.hunt_loop.<locals>.gi@2128']=_factory_8669e51f247a
+def _factory_d263491726f6(self):
 
     def log_m(msg, tag='info'):
         self.manual_log.config(state=tk.NORMAL)
@@ -5108,20 +5108,20 @@ def _factory_f910b717561e(self):
         self.manual_log.see(tk.END)
         self.manual_log.config(state=tk.DISABLED)
     return log_m
-CLOSURES['FlagTab.manual_submit.<locals>.log_m@2184']=_factory_f910b717561e
-def _factory_4256089aab07(b, color):
+CLOSURES['FlagTab.manual_submit.<locals>.log_m@2186']=_factory_d263491726f6
+def _factory_8ebef9984f43(b, color):
 
     def _enter(e):
         b.config(bg=NEO['bg'], fg=color, highlightbackground=color, highlightcolor=color)
     return _enter
-CLOSURES['neo_btn.<locals>._enter@2351']=_factory_4256089aab07
-def _factory_4f405e222584(b, color, fg):
+CLOSURES['neo_btn.<locals>._enter@2353']=_factory_8ebef9984f43
+def _factory_c920272b60b0(b, color, fg):
 
     def _leave(e):
         b.config(bg=color, fg=fg, highlightbackground=color, highlightcolor=color)
     return _leave
-CLOSURES['neo_btn.<locals>._leave@2353']=_factory_4f405e222584
-def _factory_94e29e8ebce1(self, win):
+CLOSURES['neo_btn.<locals>._leave@2355']=_factory_c920272b60b0
+def _factory_6769a967e27b(self, win):
 
     def do_deploy():
         host = self._deploy_vars['ssh_host'].get().strip()
@@ -5169,8 +5169,8 @@ def _factory_94e29e8ebce1(self, win):
                 self.root.after(0, lambda e=e: messagebox.showerror('部署失败', str(e)))
         async_run(_deploy)
     return do_deploy
-CLOSURES['MonitorTab.deploy_monitor.<locals>.do_deploy@2558']=_factory_94e29e8ebce1
-def _factory_d33ad739c623(host, mon_pw, php_path, port, pwd, self, user, web_dir):
+CLOSURES['MonitorTab.deploy_monitor.<locals>.do_deploy@2560']=_factory_6769a967e27b
+def _factory_b9d594daf36f(host, mon_pw, php_path, port, pwd, self, user, web_dir):
 
     def _deploy():
         try:
@@ -5194,8 +5194,8 @@ def _factory_d33ad739c623(host, mon_pw, php_path, port, pwd, self, user, web_dir
             self.root.after(0, lambda e=e: self.status_label.config(text=f'❌ 部署失败: {e}'))
             self.root.after(0, lambda e=e: messagebox.showerror('部署失败', str(e)))
     return _deploy
-CLOSURES['MonitorTab.deploy_monitor.<locals>.do_deploy.<locals>._deploy@2584']=_factory_d33ad739c623
-def _factory_ea2640a1a7ef(self):
+CLOSURES['MonitorTab.deploy_monitor.<locals>.do_deploy.<locals>._deploy@2586']=_factory_b9d594daf36f
+def _factory_1c9ca3c43114(self):
 
     def do_deploy(vals):
         host, port, user, pwd = (vals['host'], vals['port'], vals['user'], vals['pwd'])
@@ -5247,8 +5247,8 @@ def _factory_ea2640a1a7ef(self):
                 self.root.after(0, lambda e=e: self.log_self(f'[FAIL] {e}', 'fail'))
         async_run(_deploy)
     return do_deploy
-CLOSURES['CreepTab.ssh_deploy_creep.<locals>.do_deploy@3308']=_factory_ea2640a1a7ef
-def _factory_b925433773ed(host, port, pwd, self, sh_pass, sh_url, user):
+CLOSURES['CreepTab.ssh_deploy_creep.<locals>.do_deploy@3310']=_factory_1c9ca3c43114
+def _factory_975a70b51f67(host, port, pwd, self, sh_pass, sh_url, user):
 
     def _deploy():
         try:
@@ -5294,8 +5294,8 @@ def _factory_b925433773ed(host, port, pwd, self, sh_pass, sh_url, user):
         except Exception as e:
             self.root.after(0, lambda e=e: self.log_self(f'[FAIL] {e}', 'fail'))
     return _deploy
-CLOSURES['CreepTab.ssh_deploy_creep.<locals>.do_deploy.<locals>._deploy@3312']=_factory_b925433773ed
-def _factory_6f3426289059(c, ips, self):
+CLOSURES['CreepTab.ssh_deploy_creep.<locals>.do_deploy.<locals>._deploy@3314']=_factory_975a70b51f67
+def _factory_7f2d575ef753(c, ips, self):
 
     def run():
         ok = fail = 0
@@ -5309,8 +5309,8 @@ def _factory_6f3426289059(c, ips, self):
         self.log_self(f'一键植入完成: {ok}成功 {fail}失败', 'ok' if ok >= fail else 'fail')
         self.root.after(0, lambda: self.set_btns(True))
     return run
-CLOSURES['CreepTab.do_implant.<locals>.run@3393']=_factory_6f3426289059
-def _factory_2b517ead5a7c(c, ips, self):
+CLOSURES['CreepTab.do_implant.<locals>.run@3395']=_factory_7f2d575ef753
+def _factory_058048e2c370(c, ips, self):
 
     def run():
         ok = fail = 0
@@ -5324,8 +5324,8 @@ def _factory_2b517ead5a7c(c, ips, self):
         self.log_self(f'结果: {ok}成功 {fail}失败', 'ok' if ok >= fail else 'fail')
         self.root.after(0, lambda: self.set_btns(True))
     return run
-CLOSURES['CreepTab.do_deploy.<locals>.run@3581']=_factory_2b517ead5a7c
-def _factory_364326b20b20(c, ips, self):
+CLOSURES['CreepTab.do_deploy.<locals>.run@3583']=_factory_058048e2c370
+def _factory_b5be93809a2c(c, ips, self):
 
     def run():
         ok = fail = 0
@@ -5339,8 +5339,8 @@ def _factory_364326b20b20(c, ips, self):
         self.log_self(f'扩散完成: {ok}成功 {fail}失败', 'ok' if ok >= fail else 'fail')
         self.root.after(0, lambda: self.set_btns(True))
     return run
-CLOSURES['CreepTab.do_spread.<locals>.run@3608']=_factory_364326b20b20
-def _factory_167655ad2cc4(c, ips, self):
+CLOSURES['CreepTab.do_spread.<locals>.run@3610']=_factory_b5be93809a2c
+def _factory_9fb4929d3547(c, ips, self):
 
     def run():
         for ip in ips:
@@ -5357,8 +5357,8 @@ def _factory_167655ad2cc4(c, ips, self):
                 self.log_self(f'  [FAIL] {ip}: {e}', 'fail')
         self.root.after(0, lambda: self.set_btns(True))
     return run
-CLOSURES['CreepTab.do_check.<locals>.run@3625']=_factory_167655ad2cc4
-def _factory_2cfd38f17e92(c, cmd, ips, self):
+CLOSURES['CreepTab.do_check.<locals>.run@3627']=_factory_9fb4929d3547
+def _factory_c5e8a222ed44(c, cmd, ips, self):
 
     def run():
         for ip in ips:
@@ -5370,8 +5370,8 @@ def _factory_2cfd38f17e92(c, cmd, ips, self):
             except Exception as e:
                 self.log_self(f'[FAIL] {ip}: {e}', 'fail')
     return run
-CLOSURES['CreepTab.do_exec.<locals>.run@3649']=_factory_2cfd38f17e92
-def _factory_9262e766b1c8(c, ips, self):
+CLOSURES['CreepTab.do_exec.<locals>.run@3651']=_factory_c5e8a222ed44
+def _factory_698d3baaf739(c, ips, self):
 
     def run():
         web_root = c.get('web_root', '/var/www/html')
@@ -5385,8 +5385,8 @@ def _factory_9262e766b1c8(c, ips, self):
             except Exception as e:
                 self.log_self(f'  [FAIL] {ip}: {e}', 'fail')
     return run
-CLOSURES['CreepTab.do_kill.<locals>.run@3666']=_factory_9262e766b1c8
-def _factory_80b2b718608d(backpass, backuser, c, ips, self):
+CLOSURES['CreepTab.do_kill.<locals>.run@3668']=_factory_698d3baaf739
+def _factory_4acb4119df43(backpass, backuser, c, ips, self):
 
     def run():
         for ip in ips:
@@ -5401,8 +5401,8 @@ def _factory_80b2b718608d(backpass, backuser, c, ips, self):
             except Exception as e:
                 self.ssh_back_log_msg(f'  [FAIL] {ip}: {e}', 'fail')
     return run
-CLOSURES['CreepTab.do_ssh_backdoor.<locals>.run@3695']=_factory_80b2b718608d
-def _factory_5d480ae57dcf(backuser, c, ips, self):
+CLOSURES['CreepTab.do_ssh_backdoor.<locals>.run@3697']=_factory_4acb4119df43
+def _factory_d9be1dc05ccf(backuser, c, ips, self):
 
     def run():
         for ip in ips:
@@ -5416,8 +5416,8 @@ def _factory_5d480ae57dcf(backuser, c, ips, self):
             except Exception as e:
                 self.ssh_back_log_msg(f'  [FAIL] {ip}: {e}', 'fail')
     return run
-CLOSURES['CreepTab.do_ssh_back_check.<locals>.run@3721']=_factory_5d480ae57dcf
-def _factory_184221a44f8e(c, interval, ips, self, stopper):
+CLOSURES['CreepTab.do_ssh_back_check.<locals>.run@3723']=_factory_d9be1dc05ccf
+def _factory_3a19c50eb03f(c, interval, ips, self, stopper):
 
     def run():
         while not stopper.is_set():
@@ -5446,8 +5446,8 @@ def _factory_184221a44f8e(c, interval, ips, self, stopper):
                 time.sleep(1)
         self.c_hb_msg('心跳监控已停止', 'info')
     return run
-CLOSURES['CreepTab.toggle_creep_hb.<locals>.run@3762']=_factory_184221a44f8e
-def _factory_191fe53cf76c(c):
+CLOSURES['CreepTab.toggle_creep_hb.<locals>.run@3764']=_factory_3a19c50eb03f
+def _factory_a40c68337dfe(c):
 
     def check(ip):
         try:
@@ -5457,8 +5457,8 @@ def _factory_191fe53cf76c(c):
         except Exception:
             return (ip, False)
     return check
-CLOSURES['CreepTab.toggle_creep_hb.<locals>.run.<locals>.check@3766']=_factory_191fe53cf76c
-def _factory_3ddb5159a26a(lw, self, wd):
+CLOSURES['CreepTab.toggle_creep_hb.<locals>.run.<locals>.check@3768']=_factory_a40c68337dfe
+def _factory_c23466677c6f(lw, self, wd):
 
     def _local():
         import tarfile
@@ -5468,8 +5468,8 @@ def _factory_3ddb5159a26a(lw, self, wd):
             tar.add(wd, arcname=os.path.basename(wd))
         lw.log(f'[OK] 本地备份完成 ({os.path.getsize(bak_path) / 1024:.1f}KB)', 'ok')
     return _local
-CLOSURES['OpsTab.do_backup.<locals>._local@3955']=_factory_3ddb5159a26a
-def _factory_72afc44ed180(host, lw, port, pwd, rdir, self, user):
+CLOSURES['OpsTab.do_backup.<locals>._local@3957']=_factory_c23466677c6f
+def _factory_9fa69ad38a4a(host, lw, port, pwd, rdir, self, user):
 
     def _ssh():
         try:
@@ -5491,8 +5491,8 @@ def _factory_72afc44ed180(host, lw, port, pwd, rdir, self, user):
         except Exception as e:
             lw.log(f'[FAIL] SSH备份失败: {e}', 'fail')
     return _ssh
-CLOSURES['OpsTab.do_backup.<locals>._ssh@3968']=_factory_72afc44ed180
-def _factory_cd8970b73396(backup, destination, lw):
+CLOSURES['OpsTab.do_backup.<locals>._ssh@3970']=_factory_9fa69ad38a4a
+def _factory_6cb08f1b9dc5(backup, destination, lw):
 
     def run():
         try:
@@ -5501,8 +5501,8 @@ def _factory_cd8970b73396(backup, destination, lw):
         except Exception as exc:
             lw.log(f'[FAIL] 还原失败：{exc}', 'fail')
     return run
-CLOSURES['OpsTab.do_restore.<locals>.run@4009']=_factory_cd8970b73396
-def _factory_6e3a34ce8b68(backup, destination, host, lw, password, port, user):
+CLOSURES['OpsTab.do_restore.<locals>.run@4011']=_factory_6cb08f1b9dc5
+def _factory_450bac3c065a(backup, destination, host, lw, password, port, user):
 
     def run_remote():
         ssh = sftp = None
@@ -5539,8 +5539,8 @@ def _factory_6e3a34ce8b68(backup, destination, host, lw, password, port, user):
                         pass
                 ssh.close()
     return run_remote
-CLOSURES['OpsTab.do_restore.<locals>.run_remote@4033']=_factory_6e3a34ce8b68
-def _factory_f5ff3efa0155(PATTERNS, d, delete, lw):
+CLOSURES['OpsTab.do_restore.<locals>.run_remote@4035']=_factory_450bac3c065a
+def _factory_5e6c4cbbe936(PATTERNS, d, delete, lw):
 
     def scan():
         total = sus = 0
@@ -5577,22 +5577,22 @@ def _factory_f5ff3efa0155(PATTERNS, d, delete, lw):
                     pass
         lw.log(f'扫描完成: {total} 文件, {sus} 可疑', 'ok' if sus == 0 else 'warn')
     return scan
-CLOSURES['OpsTab.do_scan.<locals>.scan@4121']=_factory_f5ff3efa0155
-def _factory_0486f2253587(name, self, table):
+CLOSURES['OpsTab.do_scan.<locals>.scan@4123']=_factory_5e6c4cbbe936
+def _factory_964886e21a05(name, self, table):
 
     def run():
         r = self._db_cmd(f'SELECT * FROM `{name}`.`{table}` LIMIT 50', timeout=20)
         self.db_lw.log(r[:4000] or '[无数据]', 'out')
     return run
-CLOSURES['OpsTab.do_db_data.<locals>.run@4219']=_factory_0486f2253587
-def _factory_15b51ab90e3e(qs, self):
+CLOSURES['OpsTab.do_db_data.<locals>.run@4221']=_factory_964886e21a05
+def _factory_e11a543db0d0(qs, self):
 
     def run():
         r = self._db_cmd(qs, timeout=20)
         self.db_lw.log(r[:4000] or '[OK] 执行完成', 'ok' if not r.strip() else 'out')
     return run
-CLOSURES['OpsTab.do_db_sql.<locals>.run@4232']=_factory_15b51ab90e3e
-def _factory_2462eb9eacfe(ip, self):
+CLOSURES['OpsTab.do_db_sql.<locals>.run@4234']=_factory_e11a543db0d0
+def _factory_3eacd1b515c1(ip, self):
 
     def run():
         fname = f"db_backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.sql.gz"
@@ -5610,8 +5610,8 @@ def _factory_2462eb9eacfe(ip, self):
             sz = os.path.getsize(out)
             self.db_lw.log(f'[OK] 备份保存: {os.path.join(CONFIG_DIR, fname)} ({sz / 1024:.1f}KB)', 'ok')
     return run
-CLOSURES['OpsTab.do_db_dump.<locals>.run@4240']=_factory_2462eb9eacfe
-def _factory_a4fb815dc358(cmd, ips, lw, port, self, timeout, vh):
+CLOSURES['OpsTab.do_db_dump.<locals>.run@4242']=_factory_3eacd1b515c1
+def _factory_790a3206d83a(cmd, ips, lw, port, self, timeout, vh):
 
     def run():
         for ip in ips[:5]:
@@ -5622,8 +5622,8 @@ def _factory_a4fb815dc358(cmd, ips, lw, port, self, timeout, vh):
             except Exception as e:
                 lw.log(f'  [FAIL] {ip}: {e}', 'fail')
     return run
-CLOSURES['OpsTab.do_harden.<locals>.run@4303']=_factory_a4fb815dc358
-def _factory_0dda44b2bed2(https, ips, port, self, timeout):
+CLOSURES['OpsTab.do_harden.<locals>.run@4305']=_factory_790a3206d83a
+def _factory_3a52a47c73c7(https, ips, port, self, timeout):
 
     def run():
         _try_add_path(os.path.join(BASE, '防御模块'))
@@ -5661,8 +5661,8 @@ def _factory_0dda44b2bed2(https, ips, port, self, timeout):
         self.af_log_msg(summary, 'ok')
         self.root.after(0, lambda: self.af_lbl_stat.config(text=f'完成: {len(self._af_findings)} 个发现', foreground='#00ff9d'))
     return run
-CLOSURES['OpsTab.af_scan_remote.<locals>.run@4378']=_factory_0dda44b2bed2
-def _factory_edd60be42c9b(path, self):
+CLOSURES['OpsTab.af_scan_remote.<locals>.run@4380']=_factory_3a52a47c73c7
+def _factory_694267f00bcb(path, self):
 
     def run():
         _try_add_path(os.path.join(BASE, '防御模块'))
@@ -5674,8 +5674,8 @@ def _factory_edd60be42c9b(path, self):
         self.af_log_msg(s.summary(), 'ok')
         self.root.after(0, lambda: self.af_lbl_stat.config(text=f'完成: {len(s.findings)} 个发现', foreground='#00ff9d'))
     return run
-CLOSURES['OpsTab.af_scan_local.<locals>.run@4425']=_factory_edd60be42c9b
-def _factory_56fda1ff99ac(bd, cfg, interval, self, stopper):
+CLOSURES['OpsTab.af_scan_local.<locals>.run@4427']=_factory_694267f00bcb
+def _factory_a89c51a15ca5(bd, cfg, interval, self, stopper):
 
     def run():
         import tarfile
@@ -5714,8 +5714,8 @@ def _factory_56fda1ff99ac(bd, cfg, interval, self, stopper):
                 self.root.after(0, lambda e=e: self.sb_lw.log(f'[FAIL] 备份失败: {e}', 'fail'))
             stopper.wait(interval * 60)
     return run
-CLOSURES['OpsTab.toggle_sched_backup.<locals>.run@4695']=_factory_56fda1ff99ac
-def _factory_2a40ba9b1c71(TOOLS_DIR, e_port, ips, lw, mode, timeout):
+CLOSURES['OpsTab.toggle_sched_backup.<locals>.run@4697']=_factory_a89c51a15ca5
+def _factory_dcaf8bcd5e7f(TOOLS_DIR, e_port, ips, lw, mode, timeout):
 
     def run():
         for ip in ips:
@@ -5754,8 +5754,8 @@ def _factory_2a40ba9b1c71(TOOLS_DIR, e_port, ips, lw, mode, timeout):
             except Exception as ex:
                 lw.log(f'  [ERR] {ip}: {ex}', 'fail')
     return run
-CLOSURES['OpsTab.do_discover.<locals>.run@4754']=_factory_2a40ba9b1c71
-def _factory_4d8f79a4f7a5(ips, np, port, pw, self, user):
+CLOSURES['OpsTab.do_discover.<locals>.run@4756']=_factory_dcaf8bcd5e7f
+def _factory_4397cf0d06b3(ips, np, port, pw, self, user):
 
     def run():
         for ip in ips:
@@ -5770,8 +5770,8 @@ def _factory_4d8f79a4f7a5(ips, np, port, pw, self, user):
             except Exception as e:
                 self.ssh_lw.log(f'  [FAIL] {ip}: {e}', 'fail')
     return run
-CLOSURES['OpsTab.do_ssh_batch.<locals>.run@4853']=_factory_4d8f79a4f7a5
-def _factory_fbfdb55daddd(cmd, ep, ips, lw, self, timeout, vh):
+CLOSURES['OpsTab.do_ssh_batch.<locals>.run@4855']=_factory_4397cf0d06b3
+def _factory_f514ef7fe05c(cmd, ep, ips, lw, self, timeout, vh):
 
     def go():
         for ip in ips[:3]:
@@ -5782,8 +5782,8 @@ def _factory_fbfdb55daddd(cmd, ep, ips, lw, self, timeout, vh):
             except Exception as e:
                 lw.log(f'[FAIL] {ip}: {e}', 'fail')
     return go
-CLOSURES['OpsTab.do_ps.<locals>.go@4893']=_factory_fbfdb55daddd
-def _factory_0b532ec06ff9(ip, path, port, pw, self):
+CLOSURES['OpsTab.do_ps.<locals>.go@4895']=_factory_f514ef7fe05c
+def _factory_b05da72bdaf4(ip, path, port, pw, self):
 
     def run():
         try:
@@ -5810,8 +5810,8 @@ def _factory_0b532ec06ff9(ip, path, port, pw, self):
         except Exception as e:
             self.root.after(0, lambda e=e: messagebox.showerror('错误', str(e)))
     return run
-CLOSURES['OpsTab.do_phpinfo.<locals>.run@4969']=_factory_0b532ec06ff9
-def _factory_0bca952b30d6(refresh_external, root, self):
+CLOSURES['OpsTab.do_phpinfo.<locals>.run@4971']=_factory_b05da72bdaf4
+def _factory_feb13b9fe9c7(refresh_external, root, self):
 
     def refresh_external():
         if getattr(self.tabs_ref, '_closing', False):
@@ -5822,8 +5822,8 @@ def _factory_0bca952b30d6(refresh_external, root, self):
         except tk.TclError:
             pass
     return refresh_external
-CLOSURES['MachinesTab.schedule_external_refresh.<locals>.refresh_external@5089']=_factory_0bca952b30d6
-def _factory_cb4f73caef9f(machine, secure, self, variables, window):
+CLOSURES['MachinesTab.schedule_external_refresh.<locals>.refresh_external@5091']=_factory_feb13b9fe9c7
+def _factory_cbcfe229788d(machine, secure, self, variables, window):
 
     def save():
         changes = {key: variable.get() for key, variable in variables.items() if variable.get() != str(machine.get(key, ''))}
@@ -5843,8 +5843,8 @@ def _factory_cb4f73caef9f(machine, secure, self, variables, window):
         except Exception as exc:
             messagebox.showerror('更新失败', str(exc), parent=window)
     return save
-CLOSURES['MachinesTab.build_target_editor.<locals>.save@5144']=_factory_cb4f73caef9f
-def _factory_53bbedf47906(st):
+CLOSURES['MachinesTab.build_target_editor.<locals>.save@5146']=_factory_cbcfe229788d
+def _factory_4245066445bd(st):
 
     def log_msg(msg, tag='info'):
         st.config(state=tk.NORMAL)
@@ -5852,8 +5852,8 @@ def _factory_53bbedf47906(st):
         st.see(tk.END)
         st.config(state=tk.DISABLED)
     return log_msg
-CLOSURES['ToolsTab._log_widget.<locals>.log_msg@5260']=_factory_53bbedf47906
-def _factory_a4628873b007(br, self):
+CLOSURES['ToolsTab._log_widget.<locals>.log_msg@5262']=_factory_4245066445bd
+def _factory_b65cc4156444(br, self):
 
     def task():
         br.run_all(max_workers=int(self.br_workers.get()))
@@ -5867,8 +5867,8 @@ def _factory_a4628873b007(br, self):
                 res = br.submit_flags()
                 self.root.after(0, lambda: self.br_log.log(f"[+] 提交结果: {sum((1 for r in res if r['status'] == 'ok'))}/{len(res)}"))
     return task
-CLOSURES['ToolsTab.br_run.<locals>.task@5457']=_factory_a4628873b007
-def _factory_b40bcd47408f():
+CLOSURES['ToolsTab.br_run.<locals>.task@5459']=_factory_b65cc4156444
+def _factory_18eddc747414():
 
     def _set(w, val):
         try:
@@ -5878,8 +5878,8 @@ def _factory_b40bcd47408f():
         except Exception:
             pass
     return _set
-CLOSURES['AWDToolkit._apply_conn_ops.<locals>._set@5740']=_factory_b40bcd47408f
-def _factory_d3b853d691a7(self):
+CLOSURES['AWDToolkit._apply_conn_ops.<locals>._set@5742']=_factory_18eddc747414
+def _factory_1641548f026a(self):
 
     def _check():
         try:
@@ -5915,8 +5915,8 @@ def _factory_d3b853d691a7(self):
         except Exception:
             self.root.after(0, lambda: self.status_bar.config(text='状态刷新失败'))
     return _check
-CLOSURES['AWDToolkit._refresh_status.<locals>._check@5790']=_factory_d3b853d691a7
-def _factory_eafcbc0a4080(self, state):
+CLOSURES['AWDToolkit._refresh_status.<locals>._check@5792']=_factory_1641548f026a
+def _factory_2d96f5a0554f(self, state):
 
     def _kill():
         try:
@@ -5929,8 +5929,8 @@ def _factory_eafcbc0a4080(self, state):
             pass
         self.root.after(0, lambda: self.status_bar.config(text='❌ 部署超时(120s)已中断'))
     return _kill
-CLOSURES['AWDToolkit._run_workflow.<locals>._kill@5854']=_factory_eafcbc0a4080
-def _factory_32b4be0b22f5(host, port, pwd, self, ssh_port_str, ssh_user, state, watchdog, web_dir_input):
+CLOSURES['AWDToolkit._run_workflow.<locals>._kill@5856']=_factory_2d96f5a0554f
+def _factory_ac2d94f1fa3c(host, port, pwd, self, ssh_port_str, ssh_user, state, watchdog, web_dir_input):
 
     def _run():
         try:
@@ -6103,4 +6103,4 @@ def _factory_32b4be0b22f5(host, port, pwd, self, ssh_port_str, ssh_user, state, 
             self.root.after(0, lambda e=e: self._log_workflow('❌ 一键部署失败: ' + str(e)[:100]))
             self.root.after(0, lambda e=e: messagebox.showerror('一键部署失败', f'部署流程出错:\n{e}\n\n检查: ①靶机网络是否可达(靶机没启动/网络不通时连不上) ②SSH端口是否正确 ③SSH用户/密码 ④Web目录权限'))
     return _run
-CLOSURES['AWDToolkit._run_workflow.<locals>._run@5864']=_factory_32b4be0b22f5
+CLOSURES['AWDToolkit._run_workflow.<locals>._run@5866']=_factory_ac2d94f1fa3c

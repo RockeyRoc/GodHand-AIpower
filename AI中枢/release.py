@@ -24,6 +24,7 @@ def source_manifest(root):
         files.extend(p.relative_to(root) for p in (root/directory).glob('*.py') if p.name!='prepare_gui.py')
         files.extend(p.relative_to(root) for p in (root/directory).glob('*.json'))
     files.extend(p.relative_to(root) for p in (root/'防御模块'/'aoi_assets').rglob('*') if p.is_file())
+    files.extend(p.relative_to(root) for p in (root/'skills').rglob('*') if p.is_file() and '__pycache__' not in p.parts)
     files.extend(p.relative_to(root) for p in (root/'docs').rglob('*') if p.is_file() and 'docx' not in [part.casefold() for part in p.relative_to(root).parts[:-1]])
     return files
 
@@ -66,7 +67,7 @@ def main(portable=False,argv=None):
     if not args.skip_freeze:
         command=[sys.executable,'-c','import site,sys,runpy;site.addsitedir(sys.argv.pop(1));runpy.run_module("PyInstaller",run_name="__main__")',str(vendor),'--noconfirm','--clean','--onedir','--windowed','--contents-directory','_runtime','--name','GodHand','--icon',str(root/'logo.ico'),'--version-file',str(version_file),'--distpath',str(cache/'dist'),'--workpath',str(cache/'work'),'--specpath',str(cache),'--paths',str(root),'--paths',str(vendor)]
         for directory in MODULES:command.extend(['--paths',str(root/directory)])
-        for module in ['AI中枢.business','AI中枢.entry','AI中枢.worker','AI中枢.gui','AI中枢.gui_bridge','AI中枢.defense_gui','AI中枢.version','AI中枢.stdio_bridge','AI中枢.clientconfig','AI中枢.target_store','AI中枢.storage','防御模块.engine','防御模块.aoi','auto_fix','patch_deploy','rsa_crypto','phpggc_wrapper','dfunc_bypass','batch_runner','mix_attack','dashboard','tool_launchers','uvicorn.logging','uvicorn.loops.asyncio','uvicorn.protocols.http.h11_impl','uvicorn.lifespan.on']:
+        for module in ['AI中枢.business','AI中枢.entry','AI中枢.worker','AI中枢.gui','AI中枢.hub_gui','AI中枢.endpoint','AI中枢.gui_bridge','AI中枢.defense_gui','AI中枢.version','AI中枢.stdio_bridge','AI中枢.clientconfig','AI中枢.target_store','AI中枢.storage','防御模块.engine','防御模块.aoi','auto_fix','patch_deploy','rsa_crypto','phpggc_wrapper','dfunc_bypass','batch_runner','mix_attack','dashboard','tool_launchers','uvicorn.logging','uvicorn.loops.asyncio','uvicorn.protocols.http.h11_impl','uvicorn.lifespan.on']:
             command.extend(['--hidden-import',module])
         for package in ['mcp_types','httpx2','httpcore2','starlette','anyio','pydantic','ttkbootstrap','paramiko','cryptography','PIL']:
             command.extend(['--collect-all',package])
@@ -85,6 +86,7 @@ def main(portable=False,argv=None):
     shutil.copy2(cache/'dist'/'GodHand'/'GodHand.exe',output/'GodHand.exe')
     shutil.copytree(cache/'dist'/'GodHand'/'_runtime',output/'_runtime')
     for name in ['README.md','skill.md','使用说明.txt','logo.png','logo.ico']:shutil.copy2(root/name,output/name)
+    if (root/'skills').is_dir():shutil.copytree(root/'skills',output/'skills')
     if (root/'docs').is_dir():shutil.copytree(root/'docs',output/'docs',ignore=shutil.ignore_patterns('docx','DOCX','Docx'))
     shutil.copytree(root/'防御模块'/'aoi_assets',output/'防御模块'/'aoi_assets')
     aoi=root/'tools'/'AoiAWD'

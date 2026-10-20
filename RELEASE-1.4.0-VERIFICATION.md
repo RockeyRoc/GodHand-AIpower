@@ -1,3 +1,5 @@
+> 历史发布记录 · GodHand 1.4.0。当前版本说明见 README.md。
+
 # GodHand AIpower 1.4.0 远端发布核验记录
 
 ## GitHub 发布

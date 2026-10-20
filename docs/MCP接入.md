@@ -1,96 +1,94 @@
-# GodHand 统一 MCP 接入
+# GodHand 1.6 MCP 接入
 
-所有 Agent 共用一个 Streamable HTTP 地址：`http://127.0.0.1:18765/mcp`，只注册一个 MCP 工具 **godhand**。各模块及外部工具均通过这个入口调用，共用目标配置、调度器、任务数据库及日志。GUI 本机管理通道独立鉴权，不作为 Agent 接口。
+GodHand 为全部业务提供一个 MCP 工具 godhand。Codex 默认通过本机 stdio 进程接入；通用 HTTP 客户端使用固定地址 http://127.0.0.1:18765/mcp。两种方式共用同一机子库、任务和日志。
 
-1. 运行 GodHand.exe，或无界面启动 `GodHand.exe --mcp`。源码入口为 `python main_work.py`。
-2. 在“机子管理”保存比赛主机；在“AI 中枢”配置允许目标、能力和提交平台 URL。修改前先停止服务，保存后启动。
-3. 复制凭据，在启动 Agent 的 PowerShell 中设置 `$env:GODHAND_MCP_TOKEN = '复制的凭据'`。示例配置只引用环境变量；关闭终端后需重新设置。
-4. 所有客户端登记同一个 godhand 服务，无需为各模块再配置服务。
+## Codex 桌面 App：推荐接入方式
 
-## stdio 通道
+1. 打开 GodHand 的“AI 中枢”，选择允许目标并保存配置。
+2. 在“Codex 接入”选择“用户级（所有项目）”或“项目级（GodHand 目录）”。
+3. 点击“写入 Codex 配置”。完成提示显示文件位置与备份位置。
+4. 打开 Codex 的 MCP 设置，重启 godhand，或重新打开 Codex；确认显示已连接。
+5. 让 AI 执行 echo、health 和 targets，确认能够查询版本与目标。
 
-只支持 stdio 的客户端可直接登记本机进程：
+默认配置使用 stdio，包含当前安装路径和数据目录，预览可直接复制。运行便携版时，command 指向其 GodHand.exe；源码模式使用当前 Python 与 main_work.py。无需设置 GODHAND_MCP_TOKEN。
 
-```toml
-[mcp_servers.godhand]
-command = "C:/GodHand/GodHand.exe"
-args = ["--mcp-stdio"]
-```
+    [mcp_servers.godhand]
+    command = "C:/CTF/GodHand/GodHand.exe"
+    args = ["--mcp-stdio", "--data-dir", "C:/CTF/GodHand/管理工具/GodHand"]
+    startup_timeout_sec = 30
 
-stdio 进程是同一个本机服务的客户端：已有 HTTP 服务时直接附着；没有时由该进程启动并持有服务，stdio 会话结束时一并结束。两条通道共用机子库、调度器和任务数据库，同一个任务 ID 在两边都可查询。
+路径替换为实际安装位置。移动 GodHand 后重新生成配置。用户级默认使用 CODEX_HOME/config.toml；未设置 CODEX_HOME 时使用用户目录下 .codex/config.toml。项目级使用当前 GodHand 目录下 .codex/config.toml，需在 Codex 中信任该项目。
 
-AI 中枢的“写入 Codex 配置”可选择用户级 `%USERPROFILE%\.codex\config.toml` 或项目级 `<程序目录>\.codex\config.toml`。程序只替换 `mcp_servers.godhand` 表，写入前备份原文件，写入后用 TOML 解析校验。命令行等价入口：`GodHand.exe --install-codex-config user|project`。
+写入前备份原文件，仅替换 mcp_servers.godhand 表及其子表，并校验 TOML 和其他配置内容。配置不包含连接凭据。命令行写入方式：
 
-Claude Code `.mcp.json`（也可通过客户端用户级 MCP 配置供所有项目使用）：
+    GodHand.exe --install-codex-config user
+    GodHand.exe --install-codex-config project
 
-```json
-{"mcpServers":{"godhand":{"type":"http","url":"http://127.0.0.1:18765/mcp","headers":{"Authorization":"Bearer ${GODHAND_MCP_TOKEN}"}}}}
-```
+需要 HTTP 配置时附加 --codex-transport http。配置字段与 stdio 支持见[官方 MCP 文档](https://learn.chatgpt.com/docs/extend/mcp?surface=cli)。
 
-启动后用 `/mcp` 或 `claude mcp list` 检查连接，按客户端提示启用。GodHand 的导出按钮只生成示例。
+## 通用 HTTP 客户端
 
-Codex `config.toml`：
+在“AI 中枢 → 高级设置”点击“导出通用配置”，生成 Codex stdio、Claude Code HTTP 和通用 HTTP 示例。HTTP 地址固定为：
 
-```toml
-[mcp_servers.godhand]
-url = "http://127.0.0.1:18765/mcp"
-bearer_token_env_var = "GODHAND_MCP_TOKEN"
-```
+    http://127.0.0.1:18765/mcp
 
-唯一工具的输入为 `{action, arguments}`，输出为 `{action, result}`。arguments 根据动作填写；不支持的动作、缺失字段、额外字段及错误类型返回工具错误。
+点击“复制 HTTP 凭据命令”，在用于启动客户端的 PowerShell 中粘贴执行，再从该终端启动客户端。命令设置当前终端的 GODHAND_MCP_TOKEN，配置通过 Bearer 使用该值。
 
-| action | arguments | 用途 |
-|---|---|---|
-| health | 无 | 服务、统一工具名、能力数量 |
-| targets | 无 | 全部靶机、来源与是否允许，凭据脱敏 |
-| targets_import | records、on_duplicate（可省略） | 添加／批量导入靶机，待本机选择授权 |
-| targets_update | id、changes、expected_revision（可省略） | 按稳定 ID 显式更新；省略凭据保持不变，连接变更后须本机重选 |
-| capabilities | operation（可省略） | 全部或指定业务操作、字段及默认值 |
-| tools | 无 | 全部工具、路径及缺失依赖 |
-| run | operation、target、parameters、timeout、idempotency_key | 提交业务；后三项可省略 |
-| run_tool | tool、target、parameters、idempotency_key | 启动工具；后三项可省略，默认 local |
-| task | task_id | 持久化状态和结果 |
-| tasks | limit（可省略） | 最近任务 |
-| logs | task_id、after、limit | 脱敏事件；后两项可省略 |
-| cancel | task_id | 停止任务或持续操作 |
-| echo | message（可省略） | 本机连通性检查 |
+    [mcp_servers.godhand]
+    url = "http://127.0.0.1:18765/mcp"
+    bearer_token_env_var = "GODHAND_MCP_TOKEN"
 
-先用 godhand 调用 `{"action":"echo","arguments":{"message":"GodHand ready"}}`，再查询 capabilities、targets、tools。
+该临时变量不会自动进入已经打开的桌面 App。Codex 桌面用户优先使用上方 stdio 接入。轮换 HTTP 凭据后，重新复制命令并连接客户端。
 
-运行脚本：
+## 选择目标与应用设置
 
-```json
-{"action":"run_tool","arguments":{"tool":"python_script","target":"local","parameters":{"file":"C:/比赛 工具/check.py","args":["--label","有空格的名称"]}}}
-```
+在“机子管理”添加记录；批量导入见[靶机导入](靶机导入.md)。在 AI 中枢按“停止服务 → 选择允许目标 → 保存配置 → 启动服务”应用范围，页面显示已选数量。
 
-本地源码审计：
+高级设置中的“启用能力”填写能力标识，* 表示全部。“提交平台 URL”填写本场比赛需要的地址。“导入后自动授权新记录”默认关闭；开启后应用于后续新导入项。目标凭据由本机保存，任务使用明确的目标 ID。
 
-```json
-{"action":"run","arguments":{"operation":"ops_audit_local","target":"local","parameters":{"directory":"C:/比赛/site"},"timeout":60}}
-```
+## 统一接口
 
-防御能力也通过现有唯一入口登记和调用。先对已授权目标运行只读探测；启用 Fail2Ban、改动 Watchbird/WAF 或更新 AIDE 基线时，选择对应写能力单独提交。管理白名单应填写 GodHand 管理端/出口的来源 IP，不应使用目标服务器 IP。
+输入为 action 和 arguments，输出为 action 和 result。
 
-```json
-{"action":"capabilities","arguments":{"operation":"defense_probe"}}
-```
+| action | 参数概要 | 用途 |
+| --- | --- | --- |
+| echo / health | echo 可传 message | 检查连接、版本和后台 |
+| targets | 无 | 查询目标和 allowed 状态 |
+| targets_import | records、on_duplicate | 录入目标 |
+| targets_update | id、changes、expected_revision | 更新明确字段 |
+| capabilities | 可指定 operation | 查询业务操作与参数 |
+| tools | 无 | 查询工具和依赖 |
+| run | operation、target、parameters、timeout、idempotency_key | 提交业务任务 |
+| run_tool | tool、target、parameters、idempotency_key | 启动工具 |
+| task / cancel | task_id | 查询或停止任务 |
+| tasks | 可传 limit | 查询最近任务 |
+| logs | task_id、after、limit | 读取事件 |
 
-```json
-{"action":"run","arguments":{"operation":"defense_workflow_run","target":"目标ID","parameters":{"workflow":"host_audit"},"timeout":240}}
-```
+capabilities 返回具体字段及默认值，提交前按需查询。run 与 run_tool 返回 result.id；后续以 task_id 查询。logs 可用上次事件的 seq 作为 after。重试相同请求时，可复用相同 idempotency_key。
 
-防御中心的全部能力、参数与副作用说明见[操作说明](防御中心.md)。三类流程只收集证据，不自动封禁或修改目标配置。报告可用 `defense_report` 从任务历史生成；失败步骤会保留部分结果并标记任务状态。
+    {"action":"echo","arguments":{"message":"GodHand ready"}}
+    {"action":"capabilities","arguments":{"operation":"ops_audit_local"}}
+    {"action":"run","arguments":{"operation":"ops_audit_local","target":"local","parameters":{"directory":"C:/CTF/site"},"timeout":60}}
+    {"action":"task","arguments":{"task_id":"返回的ID"}}
 
-长任务立即返回 result.id。用 `{"action":"task","arguments":{"task_id":"返回的 id"}}` 查询，logs 读取事件，cancel 停止。停止后确认终态与清理记录。断连不自动取消任务，重连仍可查同一 id；同一幂等标识重试不会重复创建任务，参数必须一致。支持资源读取的客户端也可读取 `godhand://tasks/{id}`。
+## 服务与比赛数据
 
-升级后重连以刷新工具列表。旧版 godhand_echo、godhand_run 等独立工具已合并，改用统一 godhand 的对应 action。
+默认数据目录为 管理工具/GodHand。GUI、HTTP 和 stdio 使用同一目录时共享任务。固定端口同时运行一套后台；切换比赛时先停止原后台，再使用新的 --data-dir。
 
-默认监听本机回环地址。全局调用表示各 Agent 共用入口和全部已启用模块；目标与能力范围仍由本机配置。切换界面目标不改变已提交任务的连接快照。
+stdio 附着已有后台时，桥接会话结束后保留后台；没有后台时由桥接启动，其会话退出时结束自己启动的后台。由 GUI 启动的服务随窗口关闭；附着独立服务时，关闭窗口保留后台。
 
-同一数据目录只有一个服务；GUI 附着独立无界面服务后，关窗口保留该服务。由窗口启动的服务随窗口结束。管理数据默认在 管理工具/GodHand，--data-dir 可隔离比赛。凭据与请求使用当前 Windows 用户 DPAPI 加密。
+needs_review 表示远程修改结果需核对；interrupted 为中断的只读任务。Flag 提交 unknown 时先查询平台记录。
 
-重启后只读中断任务为 interrupted，远程修改任务为 needs_review，应核对靶机再重提。平台的 accepted、rejected、duplicate、rate_limited、unknown 分开记录，未知结果先查平台。端口冲突会明确报错，修改后同步客户端配置。轮换凭据后重设环境变量并重连。
+## 排查连接
 
-靶机录入示例及授权步骤见 [靶机导入说明](靶机导入.md)。GUI 与 MCP 共用当前比赛目录的加密机子库；旧机子文件只在首次升级时备份迁入，不再被新版改写。迁移与恢复详见 [统一机子库说明](机子库迁移与恢复.md)。
+| 现象 | 处理 |
+| --- | --- |
+| Codex 尚未出现 godhand | 检查配置位置，重启该 MCP 连接或重新打开 Codex |
+| 程序移动后启动失败 | 在新位置重新写入配置 |
+| 端口 18765 被占用 | 停止占用程序，或使用正在运行 GodHand 的同一数据目录 |
+| 服务凭据不匹配 | 核对当前比赛目录；HTTP 客户端再检查令牌是否已轮换 |
+| 后台仍是旧版本 | 停止旧后台后启动 1.6 |
+| 检测到旧自定义端口服务 | 先停止旧服务；再次启动时自动备份配置并迁移到 18765 |
+| 自检通过但 AI 尚未连接 | 自检验证后台与 MCP 协议；到 Codex 设置查看客户端连接状态 |
 
-“导入后自动授权新记录”是本机开关，默认关闭。开启后（保存时二次确认）任何来源的新导入记录都会立即加入允许目标；关闭时导入项仍须在“选择允许目标（含 MCP 导入）”中按 ID 手动选择。该开关不能通过 MCP 修改。
+“连接自检”逐项检查后台、鉴权、协议初始化、工具发现和 echo。实际业务结果通过 task、logs 及对应目标检查确认。

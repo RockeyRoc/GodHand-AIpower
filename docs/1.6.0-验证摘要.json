@@ -1,0 +1,58 @@
+{
+  "version": "1.6.0",
+  "date": "2026-10-20",
+  "regression": {
+    "tests": 73,
+    "status": "passed"
+  },
+  "source_stdio": {
+    "owned": "passed",
+    "attached": "passed"
+  },
+  "frozen_stdio": {
+    "owned": "passed",
+    "attached": "passed",
+    "installed_directory": "passed"
+  },
+  "codex": {
+    "codex_user_agent": "Codex Desktop/0.163.0-alpha.10.2 (Windows 10.0.26300; x86_64) dumb (godhand-delivery-check; 1.6.0)",
+    "server": "godhand",
+    "tools": [
+      "godhand"
+    ],
+    "transport": "stdio",
+    "configuration_writer": "frozen EXE",
+    "user_config_modified": false,
+    "model_turns": 0
+  },
+  "gui": {
+    "main_tabs": 9,
+    "title": "GodHand 1.6.0 — AWD 工具集成",
+    "defense_center": true,
+    "layout_scales": [
+      100,
+      150,
+      200
+    ]
+  },
+  "parity": {
+    "modules": 25,
+    "all_match": true
+  },
+  "skill": "validated",
+  "installed_exe": {
+    "version": "1.6.0",
+    "sha256": "ed961e4c20778eab5b14c6a234f28f02ef5498c2f734a7787d60756b87a3686b"
+  },
+  "portable": {
+    "generated": true,
+    "new_directory_startup": "not_passed",
+    "observed_exit_code": -1,
+    "cause": "unresolved"
+  },
+  "public_release": {
+    "version": "1.5.0",
+    "url": "https://github.com/RockeyRoc/GodHand-AIpower/releases/tag/v1.5.0",
+    "zip_sha256": "ced135216343b552a6d730a5a3c094eda96755c9b7e71e61faa3baf7aa94ff5a"
+  }
+}

@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 """Dashboard总览 — 目标数/存活数/Flag数/告警数 卡片+趋势图"""
+from AI中枢.version import VERSION
+
 import os, sys
 from datetime import datetime
 import tkinter as tk
@@ -268,7 +270,7 @@ class DashboardTab:
         # 右侧信息
         right = tk.Frame(row, bg='#082540')
         right.pack(side=tk.RIGHT, padx=(0, 14), pady=10)
-        tk.Label(right, text='v1.3.0 · SYSTEM ONLINE', font=('微软雅黑', 8, 'bold'),
+        tk.Label(right, text=f'v{VERSION} · SYSTEM ONLINE', font=('微软雅黑', 8, 'bold'),
             fg='#00ff9d', bg='#082540').pack(anchor=tk.E)
         self.clock_lbl = tk.Label(right, text='', font=('微软雅黑', 12, 'bold'),
             fg=C['accent'], bg='#082540')

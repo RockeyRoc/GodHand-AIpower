@@ -198,7 +198,7 @@ class Connection:
         status=getattr(error,'code',None) or getattr(error,'status_code',None)
         response=getattr(error,'response',None)
         status=status or getattr(response,'status_code',None)
-        if status==401:return '鉴权失败：本机 MCP 凭据无效或已轮换，请重新复制凭据并重连。'
+        if status==401:return '连接到的服务凭据不匹配：请确认当前比赛数据目录与已运行服务一致；HTTP 客户端可重新复制凭据后连接。'
         if status==502:return 'HTTP 502：本机 MCP 服务的上游连接失败。检查后台服务是否退出、端口是否指向正确服务，再执行连接自检。'
         if '502' in str(error):return 'HTTP 502：本机 MCP 服务的上游连接失败。检查后台服务是否退出、端口是否指向正确服务，再执行连接自检。'
         if status:return f'HTTP {status}：MCP 服务拒绝了连接请求。'
@@ -206,14 +206,18 @@ class Connection:
         if isinstance(reason,(TimeoutError,socket.timeout)):return '连接超时：后台未及时响应，请检查服务状态与本机端口。'
         if isinstance(reason,OSError):
             if getattr(reason,'winerror',None)==10048 or getattr(reason,'errno',None)==98:
-                return '端口冲突：本机 MCP 端口已被其他程序占用。'
+                return '端口冲突：本机 18765 已被占用。请先停止占用程序，或使用已运行 GodHand 对应的数据目录。'
             if isinstance(reason,ConnectionRefusedError) or getattr(reason,'winerror',None)==10061 or getattr(reason,'errno',None)==111:
                 return '后台服务未运行：本机端口拒绝连接。可启动服务后重试。'
         if isinstance(error,(TimeoutError,socket.timeout)):return '连接超时：后台未及时响应，请检查服务状态与本机端口。'
         return 'MCP 连接失败：'+str(error)
 
     def start(self):
-        try:self.call();self.attached=True;return
+        try:
+            health=self.call()
+            if health.get('version')!=VERSION:
+                raise RuntimeError(f"后台正在运行 GodHand {health.get('version','未知版本')}。请先停止旧后台，再启动 {VERSION}。")
+            self.attached=True;return
         except urllib.error.HTTPError as exc:raise RuntimeError(self.describe_error(exc)) from None
         except urllib.error.URLError as exc:
             reason=getattr(exc,'reason',None)
@@ -259,7 +263,9 @@ class Connection:
 
 
 def client_configs(store):
-    url='http://127.0.0.1:'+str(store.config['port'])+'/mcp'
+    from .clientconfig import render
+    from .endpoint import MCP_URL
+    url=MCP_URL
     claude={'mcpServers':{'godhand':{'type':'http','url':url,'headers':{'Authorization':'Bearer ${GODHAND_MCP_TOKEN}'}}}}
-    codex='[mcp_servers.godhand]\nurl = '+json.dumps(url)+'\nbearer_token_env_var = "GODHAND_MCP_TOKEN"\n'
+    codex=render(store)
     return json.dumps(claude,ensure_ascii=False,indent=2),codex

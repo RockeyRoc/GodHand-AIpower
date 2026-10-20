@@ -73,7 +73,7 @@ class Acceptance(unittest.TestCase):
         result=wait_task(self.store,row['id'])
         self.assertEqual('succeeded',result['status'],result)
         data=result['result']['data']['return']
-        self.assertEqual('1.5.0',data['product_version'])
+        self.assertEqual('1.6.0',data['product_version'])
         self.assertTrue(Path(result['result']['data']['outputs']['markdown_report']).is_file())
     def test_06_legacy_audit_and_backup(self):
         source=self.path/'site';source.mkdir(exist_ok=True);(source/'index.php').write_text('<?php eval($_POST["x"]); ?>',encoding='utf-8')
@@ -102,7 +102,7 @@ class Acceptance(unittest.TestCase):
     def test_08b_connection_error_categories(self):
         from urllib.error import HTTPError,URLError
         self.assertIn('HTTP 502',Connection.describe_error(HTTPError('http://127.0.0.1/mcp',502,'bad gateway',None,None)))
-        self.assertIn('鉴权失败',Connection.describe_error(HTTPError('http://127.0.0.1/mcp',401,'unauthorized',None,None)))
+        self.assertIn('凭据不匹配',Connection.describe_error(HTTPError('http://127.0.0.1/mcp',401,'unauthorized',None,None)))
         self.assertIn('后台服务未运行',Connection.describe_error(URLError(ConnectionRefusedError(10061,'refused'))))
     def test_09_protocol_two_clients(self):
         async def run():

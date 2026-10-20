@@ -269,15 +269,20 @@ def main(request_path):
         else:
             writer=EventWriter(env)
             with redirect_stdout(writer),redirect_stderr(writer):
-                module=load_business(env)
-                if request['payload']['kind']=='snapshot':
-                    payload=request['payload'];memo={};fn=state.thaw(payload['call'],module,memo)
-                    value=fn(*state.thaw(payload.get('args',[]),module,memo),**state.thaw(payload.get('kwargs',{}),module,memo));env.clock.drain();data={'return':state.primitive(value)}
-                    for actor in memo.values():
-                        if isinstance(actor,state.ActorState):env.emit('actor_state',{k:state.primitive(v) for k,v in vars(actor).items() if k in ('_af_findings','results','_history','known','total_submitted','atk_stats')})
-                else:data=run_operation(module,request['payload'])
+                payload=request['payload']
+                if payload.get('kind')=='operation' and payload.get('spec',{}).get('actor')=='DefenseHandler':
+                    from 防御模块.engine import execute as run_defense
+                    data=run_defense(payload['spec']['id'],payload.get('target',{}),payload.get('parameters',{}),env)
+                else:
+                    module=load_business(env)
+                    if payload['kind']=='snapshot':
+                        memo={};fn=state.thaw(payload['call'],module,memo)
+                        value=fn(*state.thaw(payload.get('args',[]),module,memo),**state.thaw(payload.get('kwargs',{}),module,memo));env.clock.drain();data={'return':state.primitive(value)}
+                        for actor in memo.values():
+                            if isinstance(actor,state.ActorState):env.emit('actor_state',{k:state.primitive(v) for k,v in vars(actor).items() if k in ('_af_findings','results','_history','known','total_submitted','atk_stats')})
+                    else:data=run_operation(module,payload)
             outcome=data.get('return')
-            failed=bool(env.errors) or outcome is False or (isinstance(outcome,list) and len(outcome)>1 and outcome[1] is False)
+            failed=bool(env.errors) or data.get('failed') is True or outcome is False or (isinstance(outcome,list) and len(outcome)>1 and outcome[1] is False)
             result=TaskResult(identity,'failed' if failed else 'succeeded',1 if failed else 0,'GodHand 业务执行完成',data,error='\n'.join(env.errors)[-4000:]).wire()
     except Exception as exc:
         env.emit('error',{'message':str(redact(str(exc))),'type':type(exc).__name__})

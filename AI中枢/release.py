@@ -14,7 +14,7 @@ from .templates import clean,PRIVATE
 from .version import VERSION,numeric
 
 TEMPLATES=['watchdog.sh','watchdog.php','waf_strong.php','waf_ban.php','waf_admin.php','tinyfilemanager.php','target_monitor.php','rsa_agent.php','immortal_shell.php','creep_rsa_ae.php','creep_rsa.php','.waf.dat.php','.waf.dat','.creep.dat','.creep.php']
-MODULES={'攻击模块':['batch_runner.py','dfunc_bypass.py','mix_attack.py','phpggc_wrapper.py','rsa_crypto.py'],'防御模块':['auto_fix.py','patch_deploy.py','fix_library.json']}
+MODULES={'攻击模块':['batch_runner.py','dfunc_bypass.py','mix_attack.py','phpggc_wrapper.py','rsa_crypto.py'],'防御模块':['__init__.py','auto_fix.py','patch_deploy.py','fix_library.json','engine.py','SOURCES.md']}
 ROOT_FILES=['main_work.py','main.py','dashboard.py','tool_launchers.py','build_exe.py','build_work.py','logo.ico','logo.png','icon.png','README.md','使用说明.txt','requirements.lock.txt']
 
 def source_manifest(root):
@@ -64,7 +64,7 @@ def main(portable=False,argv=None):
     if not args.skip_freeze:
         command=[sys.executable,'-c','import site,sys,runpy;site.addsitedir(sys.argv.pop(1));runpy.run_module("PyInstaller",run_name="__main__")',str(vendor),'--noconfirm','--clean','--onedir','--windowed','--contents-directory','_runtime','--name','GodHand','--icon',str(root/'logo.ico'),'--version-file',str(version_file),'--distpath',str(cache/'dist'),'--workpath',str(cache/'work'),'--specpath',str(cache),'--paths',str(root),'--paths',str(vendor)]
         for directory in MODULES:command.extend(['--paths',str(root/directory)])
-        for module in ['AI中枢.business','AI中枢.entry','AI中枢.worker','AI中枢.gui','AI中枢.gui_bridge','AI中枢.version','AI中枢.stdio_bridge','AI中枢.clientconfig','AI中枢.target_store','AI中枢.storage','auto_fix','patch_deploy','rsa_crypto','phpggc_wrapper','dfunc_bypass','batch_runner','mix_attack','dashboard','tool_launchers','uvicorn.logging','uvicorn.loops.asyncio','uvicorn.protocols.http.h11_impl','uvicorn.lifespan.on']:
+        for module in ['AI中枢.business','AI中枢.entry','AI中枢.worker','AI中枢.gui','AI中枢.gui_bridge','AI中枢.defense_gui','AI中枢.version','AI中枢.stdio_bridge','AI中枢.clientconfig','AI中枢.target_store','AI中枢.storage','防御模块.engine','auto_fix','patch_deploy','rsa_crypto','phpggc_wrapper','dfunc_bypass','batch_runner','mix_attack','dashboard','tool_launchers','uvicorn.logging','uvicorn.loops.asyncio','uvicorn.protocols.http.h11_impl','uvicorn.lifespan.on']:
             command.extend(['--hidden-import',module])
         for package in ['mcp_types','httpx2','httpcore2','starlette','anyio','pydantic','ttkbootstrap','paramiko','cryptography','PIL']:
             command.extend(['--collect-all',package])
@@ -97,4 +97,7 @@ def main(portable=False,argv=None):
         with zipfile.ZipFile(output.with_name(output.name+'.zip'),'w',zipfile.ZIP_DEFLATED,compresslevel=6) as archive:
             for path in output.rglob('*'):
                 if path.is_file():archive.write(path,path.relative_to(output.parent))
+        archive_path=output.with_name(output.name+'.zip')
+        with archive_path.open('rb') as stream:digest=hashlib.file_digest(stream,'sha256').hexdigest()
+        archive_path.with_name(archive_path.name+'.sha256').write_text(digest+'  '+archive_path.name+'\n',encoding='utf-8')
     print(json.dumps({'output':str(output),'files':count},ensure_ascii=False));return 0

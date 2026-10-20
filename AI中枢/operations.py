@@ -39,5 +39,7 @@ def catalogue():
     for spec in specs.values():
         spec.fields.update({k:{'kind':'value','default':v} for k,v in {'command':'','remote_path':'','content':'','pid':'','block_port':'','scan_mode':'tcp','scan_ports':'80','findings':[],'webdir':'/var/www/html'}.items()})
     specs['template_render']=OperationSpec('template_render','渲染本机通信模板','TemplateHandler','render',local=True,fields={'template':{'kind':'value','default':'rsa_agent.php'}})
+    from 防御模块.engine import catalogue as defense_catalogue
+    specs.update(defense_catalogue())
     return specs
 

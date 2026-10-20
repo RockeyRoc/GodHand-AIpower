@@ -6,7 +6,7 @@
 
 **面向 AWD / CTF 的图形化工具管理与 MCP AI 中枢**
 
-![Version](https://img.shields.io/badge/version-1.3.0-00b894)
+![Version](https://img.shields.io/badge/version-1.4.0-00b894)
 ![Platform](https://img.shields.io/badge/platform-Windows-0078D4)
 ![MCP](https://img.shields.io/badge/MCP-Streamable_HTTP-7c3aed)
 
@@ -31,12 +31,22 @@ GodHand 基于 [Wwlsyl / YL_Phantom](https://github.com/Wwlsyl/YL_Phantom) 导�
 | Flag 获取 | 通道检查、轮次获取、平台提交及历史记录 |
 | 靶机监控 | 监控日志、攻击排行、告警及远程文件管理 |
 | 通信与部署 | 原项目通信组件、RSA 通信、部署与状态检查 |
-| 综合运维 | 备份还原、源码检查、数据库、加固、IP 管理、定时备份、主机发现、SSH、进程及 PHP 信息 |
+| 综合运维 | 备份还原、源码检查、数据库、加固、IP 管理、定时备份、主机发现、SSH、进程、PHP 信息及防御中心 |
 | 工具管理 | 业务能力检索、Tabby / WinSCP、自定义程序与 Python / PHP / PowerShell 脚本、依赖检查 |
 | AI 中枢 | MCP 服务、客户端配置导出、目标与能力范围、凭据、健康检查 |
 | 任务管理 | 后台执行、状态与日志、产物、超时、取消、幂等提交及重启恢复 |
 
-当前业务目录登记 **75 个业务动作**，另提供 **5 个内置工具入口**；具体参数通过 `capabilities` 和 `tools` 查询。接口登记与各场景的验证情况见[能力覆盖表](docs/能力覆盖表.md)。
+当前业务目录登记 **95 个业务动作**，另提供 **5 个内置工具入口**；具体参数通过 `capabilities` 和 `tools` 查询。接口登记与各场景的验证情况见[能力覆盖表](docs/能力覆盖表.md)。
+
+### 1.4.0 更新
+
+- 综合运维新增“防御中心”，GUI 与 MCP 共用同一任务服务和能力目录。
+- 通过 SSH 检查目标已有 Fail2Ban、Watchbird、Lynis、YARA、AIDE；目标缺少程序时报告原因，不自动安装。
+- 提供 Fail2Ban Jail 状态、白名单策略、封禁/解封、备份和恢复；首次接入默认只检查，启用策略需要单独提交。
+- 提供 Watchbird 状态、日志与样本统计、单项防护开关、配置恢复，以及校验后切换现有 PHP WAF。
+- 提供 Lynis 主机审计、指定规则/目录的 YARA 扫描、AIDE 基线初始化/检查/显式更新和三种证据收集流程。
+- 任务结果包含结构化发现和脱敏证据，可导出 JSON/Markdown 报告；新增能力通过既有唯一入口 `godhand(action, arguments)` 使用。
+- 便携包只包含自编写适配器，不内置上游防御程序。来源、许可证及验证范围见[来源与许可证](防御模块/SOURCES.md)和[1.4.0 验收记录](docs/1.4.0-实现与验收.md)。
 
 ### 1.3.0 更新
 
@@ -246,8 +256,8 @@ python build_work.py --check
 构建核心程序或含外部工具的便携包：
 
 ```powershell
-python build_exe.py --output ../GodHand-build/GodHand-core-1.3.0 --cache ../GodHand-tmp/build-core
-python build_work.py --output ../GodHand-build/GodHand-portable-1.3.0 --cache ../GodHand-tmp/build-portable --tools-root C:/CTF/PortableTools
+python build_exe.py --output ../GodHand-build/GodHand-core-1.4.0 --cache ../GodHand-tmp/build-core
+python build_work.py --output ../GodHand-build/GodHand-portable-1.4.0 --cache ../GodHand-tmp/build-portable --tools-root C:/CTF/PortableTools
 ```
 
 输出目录必须是新目录。便携构建的 `--tools-root` 目录需包含 `Tabby/` 与 `WinSCP/` 程序文件及许可证；构建会排除个人配置、运行数据和历史密钥，并生成文件校验清单及便携 ZIP。详见[开发与发布](docs/开发与发布.md)。
@@ -257,6 +267,10 @@ python build_work.py --output ../GodHand-build/GodHand-portable-1.3.0 --cache ..
 | 文档 | 内容 |
 | --- | --- |
 | [MCP 接入](docs/MCP接入.md) | 客户端配置、动作参数、任务与服务生命周期 |
+| [1.4.0 发行说明](docs/1.4.0-发行说明.md) | 新增能力、便携包内容与验证边界 |
+| [1.4.0 实现与验收](docs/1.4.0-实现与验收.md) | 防御中心、MCP 能力、验证分层与限制 |
+| [防御中心操作说明](docs/防御中心.md) | 目标要求、能力参数、流程与回滚 |
+| [防御来源与许可证](防御模块/SOURCES.md) | 上游来源、许可证及适配边界 |
 | [1.3.0 实现状态](docs/1.3.0-本轮实现状态.md) | 本轮交付范围、验证结果与未实现项 |
 | [1.3.0 同步检查](docs/1.3.0-同步检查.md) | 便携包校验、开发版同步与回归测试 |
 | [靶机导入](docs/靶机导入.md) | 字段、批量限制、去重和本机授权 |

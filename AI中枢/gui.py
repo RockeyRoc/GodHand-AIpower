@@ -24,6 +24,14 @@ def attach(app):
             if result:return result
     notebook=find(app.root)
     if notebook is None:raise RuntimeError('找不到主导航 Notebook')
+    ops_notebook=getattr(getattr(app,'ops',None),'_godhand_ops_notebook',None)
+    if ops_notebook is None:raise RuntimeError('找不到综合运维页面，无法挂载防御中心')
+    if not getattr(app,'_godhand_bridge',None):app._godhand_bridge=Bridge(app,connection)
+    if not getattr(app,'_godhand_defense_tab',None):
+        from .defense_gui import DefenseTab
+        page=ttk.Frame(ops_notebook,padding=4)
+        ops_notebook.add(page,text='  防御中心  ')
+        app._godhand_defense_tab=DefenseTab(page,app,app._godhand_bridge,store)
     tools=ttk.Frame(notebook,padding=8);ai=ttk.Frame(notebook,padding=12)
     notebook.add(tools,text='工具管理');notebook.add(ai,text='AI 中枢')
     inner=ttk.Notebook(tools);inner.pack(fill='both',expand=True)
@@ -60,7 +68,6 @@ def attach(app):
     def started(_):
         state['ready']=True;state['starting']=False
         label.configure(text=('已附着独立服务' if connection.attached else '服务随本窗口运行')+'  '+connection.url.replace('/control','/mcp')+'  | 统一工具：godhand')
-        if not getattr(app,'_godhand_bridge',None):app._godhand_bridge=Bridge(app,connection)
     def start():
         if state['starting']:return
         state['starting']=True
@@ -169,12 +176,13 @@ def attach(app):
     task_refresh()
     old_close=app.on_close
     def close():
-        if getattr(app,'_godhand_bridge',None):app._godhand_bridge.closed=True
+        if getattr(app,'_godhand_bridge',None):app._godhand_bridge.close()
         # Keep the UI responsive while child process cleanup runs.
         label.configure(text='正在停止窗口所属服务…')
         background(connection.close,lambda _:old_close())
     app.on_close=close;app.root.protocol('WM_DELETE_WINDOW',close);app._godhand_connection=connection
     if os.environ.get('GODHAND_CHECK_UI')=='1':
-        report={'product':app.root.title(),'window_logo':bool(app._window_logo),'banner_logo':bool(app._banner_logo),'dashboard_logo':bool(getattr(app.dash,'_logo',None)),'target_picker':True,'tabs':[notebook.tab(t,'text') for t in notebook.tabs()],'legacy_ops':len(app.ops._godhand_ops_notebook.tabs()),'tools':tool_rows}
+        report={'product':app.root.title(),'window_logo':bool(app._window_logo),'banner_logo':bool(app._banner_logo),'dashboard_logo':bool(getattr(app.dash,'_logo',None)),'target_picker':True,'tabs':[notebook.tab(t,'text') for t in notebook.tabs()],'legacy_ops':len(app.ops._godhand_ops_notebook.tabs()),'defense_center':any('防御中心' in app.ops._godhand_ops_notebook.tab(t,'text') for t in app.ops._godhand_ops_notebook.tabs()),'tools':tool_rows}
+        app.root.after(250,app._godhand_bridge.close)
         atomic_json(store.path/'ui-check.json',report);app.root.after(300,old_close)
     else:start()

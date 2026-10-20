@@ -64,6 +64,17 @@ class Acceptance(unittest.TestCase):
         self.store.add_target({'ip':'127.0.0.1','port':'8080','pass':'TEST-DO-NOT-LEAK'})
         with self.assertRaises(PermissionError):self.service.submit_operation('waf_check','127.0.0.1')
         self.assertNotIn('TEST-DO-NOT-LEAK',json.dumps(self.store.machine_records()))
+    def test_05b_defense_catalogue_and_local_report(self):
+        self.assertIn('defense_probe',self.service.specs)
+        self.assertIn('defense_fail2ban_rollback',self.service.specs)
+        self.assertTrue(self.service.specs['defense_probe'].read_only)
+        self.assertFalse(self.service.specs['defense_fail2ban_ban'].read_only)
+        row=self.service.submit_operation('defense_report','local',{'task_ids':[]})
+        result=wait_task(self.store,row['id'])
+        self.assertEqual('succeeded',result['status'],result)
+        data=result['result']['data']['return']
+        self.assertEqual('1.4.0',data['product_version'])
+        self.assertTrue(Path(result['result']['data']['outputs']['markdown_report']).is_file())
     def test_06_legacy_audit_and_backup(self):
         source=self.path/'site';source.mkdir(exist_ok=True);(source/'index.php').write_text('<?php eval($_POST["x"]); ?>',encoding='utf-8')
         row=self.service.submit_operation('ops_audit_local','local',{'directory':str(source)})
@@ -133,6 +144,15 @@ class Acceptance(unittest.TestCase):
                     selected=await client.call_tool('godhand',{'action':'capabilities','arguments':{'operation':'waf_check'}})
                     self.assertFalse(selected.is_error,selected)
                     self.assertEqual(['waf_check'],[item['id'] for item in selected.structured_content['result']])
+                    defense=await client.call_tool('godhand',{'action':'capabilities','arguments':{'operation':'defense_probe'}})
+                    self.assertFalse(defense.is_error,defense)
+                    self.assertEqual(['defense_probe'],[item['id'] for item in defense.structured_content['result']])
+                    self.assertIn('webdir',defense.structured_content['result'][0]['fields'])
+                    report=await client.call_tool('godhand',{'action':'run','arguments':{'operation':'defense_report','target':'local','parameters':{'task_ids':[]}}})
+                    self.assertFalse(report.is_error,report)
+                    report_id=report.structured_content['result']['id']
+                    report_row=await asyncio.to_thread(wait_task,self.store,report_id)
+                    self.assertEqual('succeeded',report_row['status'],report_row)
                     for values in [{'action':'not_an_action'},{'action':'run','arguments':{'operation':'waf_check'}},{'action':'tasks','arguments':{'limit':'PRIVATE-INPUT-MARKER'}},{'action':'health','arguments':{'unknown':True}}]:
                         result=await client.call_tool('godhand',values)
                         self.assertTrue(result.is_error,result)

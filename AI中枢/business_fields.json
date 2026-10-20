@@ -1,5 +1,5 @@
 {
-  "source_sha256": "6ac459f4ef300f5fc686b987014de4c84daa0f3cd511279f0c7fb433f4370a3b",
+  "source_sha256": "24138a116fe581f9d004e2ce62779dcd12f7bf4052962c31605eeb24472e905e",
   "fields": {
     "LogWidget": {
       "text": {
@@ -1245,6 +1245,10 @@
         "kind": "value",
         "default": ""
       },
+      "root": {
+        "kind": "value",
+        "default": ""
+      },
       "log": {
         "kind": "value",
         "default": ""
@@ -1263,10 +1267,6 @@
         "kind": "log"
       },
       "ggc_chains_list": {
-        "kind": "value",
-        "default": ""
-      },
-      "root": {
         "kind": "value",
         "default": ""
       }

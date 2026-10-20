@@ -38,14 +38,39 @@ def redact(value):
 
 def _replace(temporary, path):
     """os.replace with a short retry for antivirus/indexer file locks."""
+    last_error = None
     for attempt in range(6):
         try:
             os.replace(temporary, path); return
-        except PermissionError:
+        except PermissionError as exc:
+            last_error = exc
             # Some Windows filters report failure after the move completed.
             if not temporary.exists(): return
-            if attempt == 5: raise
+            if attempt == 5: break
             time.sleep(0.05 * (attempt + 1))
+    # Microsoft Store/AppContainer directories can permit ordinary file writes
+    # while rejecting every rename operation.  Preserve the normal atomic path
+    # above, then use a rollback-protected direct commit so first-run setup and
+    # later configuration saves still work in those restricted directories.
+    replacement = temporary.read_bytes()
+    previous = path.read_bytes() if path.exists() else None
+    created = previous is None
+    try:
+        with path.open('xb' if created else 'r+b') as stream:
+            stream.seek(0); stream.write(replacement); stream.truncate()
+            stream.flush(); os.fsync(stream.fileno())
+    except Exception:
+        try:
+            if created:
+                path.unlink(missing_ok=True)
+            else:
+                with path.open('r+b') as stream:
+                    stream.seek(0); stream.write(previous); stream.truncate()
+                    stream.flush(); os.fsync(stream.fileno())
+        except Exception:
+            pass
+        raise last_error
+    temporary.unlink(missing_ok=True)
 
 
 def atomic_json(path, value):

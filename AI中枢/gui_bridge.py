@@ -13,7 +13,10 @@ DIRECT={
  'MonitorTab':['toggle','fm_refresh','fm_search','fm_edit_file','fm_save_file','fm_delete_file','fm_download','fm_upload_file','fm_mkdir','export_atk','export_log'],
  'CreepTab':['do_implant','do_deploy','do_spread','do_check','do_exec','do_kill','do_ssh_backdoor','do_ssh_back_check','toggle_creep_hb'],
  'OpsTab':['do_backup','do_restore','do_scan','do_db_show','do_db_create','do_db_tables','do_db_data','do_db_sql','do_db_dump','do_db_chpass','do_harden','af_scan_remote','af_scan_local','af_deploy_patch','do_ipban','do_ipunban','do_ipban_list','do_ipban_batch','toggle_sched_backup','do_discover','do_ssh_test','do_ssh_chpass','do_ssh_cmd','do_ssh_batch','do_ps','do_kill_proc','do_block_port','do_phpinfo'],
- 'ToolsTab':['ggc_refresh','ggc_generate','df_check','df_parse_pi','br_run']}
+ # Listing the local PHPGGC catalog is a fast file-system refresh. Keep it on
+ # the UI thread so ToolsTab can populate during window construction, before
+ # the shared MCP service has finished starting.
+ 'ToolsTab':['ggc_generate','df_check','df_parse_pi','br_run']}
 
 class BusinessThread:
     def __init__(self,target=None,args=(),kwargs=None,daemon=True,**ignored):self.target=target;self.args=args;self.kwargs=kwargs or {};self.task_id=None
@@ -78,12 +81,61 @@ class Bridge:
             self.pending[task['id']]={'seq':0,'bindings':memo.get('$bindings',{}),'actor':actor,'method':getattr(fn,'__name__','')}
             return task['id']
         except Exception as exc:messagebox.showerror('任务未启动',str(exc));return None
+    def submit_operation(self,identity,target_id,parameters=None,timeout=120,callback=None):
+        """Submit an OperationSpec through the same local service used by MCP."""
+        def run():
+            try:
+                row=self.connection.call('operation',identity=identity,target_id=target_id,
+                                         parameters=parameters or {},timeout=timeout,caller='desktop')
+                self.app._dispatcher.post(self._register_operation,row,identity,callback)
+            except Exception as exc:
+                self.app._dispatcher.post(self._operation_error,identity,callback,exc)
+        threading.Thread(target=run,name='GodHand-defense-submit',daemon=True).start()
+    def _register_operation(self,row,identity,callback):
+        task_id=row.get('id') if isinstance(row,dict) else None
+        if not task_id:
+            self._operation_error(identity,callback,RuntimeError('服务未返回任务编号'))
+            return
+        self.pending[task_id]={'seq':0,'bindings':{},'actor':None,'method':identity,
+                               'operation':identity,'callback':callback}
+        if callback:callback(row,None)
+    def _operation_error(self,identity,callback,error):
+        describe=getattr(self.connection,'describe_error',None)
+        detail=describe(error) if describe else str(error)
+        if callback:callback(None,error)
+        else:self.app.log(identity+' 提交失败：'+detail,'fail')
+    def cancel_task(self,task_id,callback=None):
+        def run():
+            try:
+                row=self.connection.call('cancel',task_id=task_id)
+                self.app._dispatcher.post(callback or (lambda _:None),row)
+            except Exception as exc:
+                describe=getattr(self.connection,'describe_error',None)
+                detail=describe(exc) if describe else str(exc)
+                self.app._dispatcher.post(self.app.log,'任务取消失败：'+detail,'fail')
+        threading.Thread(target=run,name='GodHand-defense-cancel',daemon=True).start()
     def cancel_actor(self,actor,method=''):
-        found=False
-        for identity,task in list(self.pending.items()):
-            if task['actor'] is actor and (not method or task['method']==method):
-                self.connection.call('cancel',task_id=identity);found=True
+        matches=[(identity,task) for identity,task in list(self.pending.items())
+                 if task['actor'] is actor and (not method or task['method']==method)]
+        found=bool(matches)
+        if self.closed:
+            for identity,_ in matches:self.pending.pop(identity,None)
+            return found
+        for identity,_ in matches:
+            try:self.connection.call('cancel',task_id=identity)
+            except Exception as exc:
+                describe=getattr(self.connection,'describe_error',None)
+                detail=describe(exc) if describe else str(exc)
+                # A stopped backend cannot own a live task.  Remove the stale
+                # local handle so the user can start the operation again.
+                if detail.startswith(('后台服务未运行','连接超时')):
+                    self.pending.pop(identity,None)
+                self.app.log('任务取消请求失败：'+detail,'fail')
         return found
+    def close(self):
+        global _bridge
+        self.closed=True;self.pending.clear()
+        if _bridge is self:_bridge=None
     def poll(self):
         if self.closed:return
         for identity,task in list(self.pending.items()):
@@ -102,6 +154,10 @@ class Bridge:
                             if hasattr(actor,key):setattr(actor,key,False)
                         if hasattr(actor,'set_btns'):actor.set_btns(True)
                     if row['result'] and row['result'].get('error'):self.app.log(row['result']['error'],'fail')
+                    callback=task.get('callback')
+                    if callback:
+                        try:callback(row,None)
+                        except Exception as exc:self.app.log('防御任务界面刷新失败：'+str(exc),'fail')
             except Exception as exc:self.app.log('任务事件读取失败: '+str(exc),'fail')
         self.app.root.after(200,self.poll)
     def replay(self,task,event):

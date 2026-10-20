@@ -4278,8 +4278,9 @@ class ToolsTab(ActorState):
 
     def _domain_init(self, parent, log_func):
         self.parent = parent
+        self.root = parent.winfo_toplevel() if hasattr(parent, 'winfo_toplevel') else parent
         self.log = log_func
-    _fields = {'ggc_chain': {'kind': 'value', 'default': ''}, 'ggc_params': {'kind': 'value', 'default': ''}, 'ggc_enc': {'kind': 'value', 'default': ''}, 'ggc_out': {'kind': 'text', 'default': ''}, 'df_url': {'kind': 'value', 'default': ''}, 'df_pass': {'kind': 'value', 'default': 'cmd'}, 'df_phpinfo': {'kind': 'value', 'default': ''}, 'df_tree': {'kind': 'table'}, 'br_targets': {'kind': 'text', 'default': ''}, 'br_cmd': {'kind': 'value', 'default': 'python exploit.py {ip} {port}'}, 'br_re': {'kind': 'value', 'default': 'flag\\{[^}]+\\}'}, 'br_sub': {'kind': 'value', 'default': ''}, 'br_tok': {'kind': 'value', 'default': ''}, 'parent': {'kind': 'value', 'default': ''}, 'log': {'kind': 'value', 'default': ''}, 'ggc_log': {'kind': 'log'}, 'df_log': {'kind': 'log'}, 'br_workers': {'kind': 'value', 'default': ''}, 'br_log': {'kind': 'log'}, 'ggc_chains_list': {'kind': 'value', 'default': ''}, 'root': {'kind': 'value', 'default': ''}}
+    _fields = {'ggc_chain': {'kind': 'value', 'default': ''}, 'ggc_params': {'kind': 'value', 'default': ''}, 'ggc_enc': {'kind': 'value', 'default': ''}, 'ggc_out': {'kind': 'text', 'default': ''}, 'df_url': {'kind': 'value', 'default': ''}, 'df_pass': {'kind': 'value', 'default': 'cmd'}, 'df_phpinfo': {'kind': 'value', 'default': ''}, 'df_tree': {'kind': 'table'}, 'br_targets': {'kind': 'text', 'default': ''}, 'br_cmd': {'kind': 'value', 'default': 'python exploit.py {ip} {port}'}, 'br_re': {'kind': 'value', 'default': 'flag\\{[^}]+\\}'}, 'br_sub': {'kind': 'value', 'default': ''}, 'br_tok': {'kind': 'value', 'default': ''}, 'parent': {'kind': 'value', 'default': ''}, 'root': {'kind': 'value', 'default': ''}, 'log': {'kind': 'value', 'default': ''}, 'ggc_log': {'kind': 'log'}, 'df_log': {'kind': 'log'}, 'br_workers': {'kind': 'value', 'default': ''}, 'br_log': {'kind': 'log'}, 'ggc_chains_list': {'kind': 'value', 'default': ''}}
 
 class AWDToolkit(ActorState):
 
@@ -5843,7 +5844,7 @@ def _factory_cb4f73caef9f(machine, secure, self, variables, window):
             messagebox.showerror('更新失败', str(exc), parent=window)
     return save
 CLOSURES['MachinesTab.build_target_editor.<locals>.save@5144']=_factory_cb4f73caef9f
-def _factory_80721e496745(st):
+def _factory_53bbedf47906(st):
 
     def log_msg(msg, tag='info'):
         st.config(state=tk.NORMAL)
@@ -5851,8 +5852,8 @@ def _factory_80721e496745(st):
         st.see(tk.END)
         st.config(state=tk.DISABLED)
     return log_msg
-CLOSURES['ToolsTab._log_widget.<locals>.log_msg@5256']=_factory_80721e496745
-def _factory_da6bdc5cb231(br, self):
+CLOSURES['ToolsTab._log_widget.<locals>.log_msg@5260']=_factory_53bbedf47906
+def _factory_a4628873b007(br, self):
 
     def task():
         br.run_all(max_workers=int(self.br_workers.get()))
@@ -5866,8 +5867,8 @@ def _factory_da6bdc5cb231(br, self):
                 res = br.submit_flags()
                 self.root.after(0, lambda: self.br_log.log(f"[+] 提交结果: {sum((1 for r in res if r['status'] == 'ok'))}/{len(res)}"))
     return task
-CLOSURES['ToolsTab.br_run.<locals>.task@5453']=_factory_da6bdc5cb231
-def _factory_99f7afa5386c():
+CLOSURES['ToolsTab.br_run.<locals>.task@5457']=_factory_a4628873b007
+def _factory_b40bcd47408f():
 
     def _set(w, val):
         try:
@@ -5877,8 +5878,8 @@ def _factory_99f7afa5386c():
         except Exception:
             pass
     return _set
-CLOSURES['AWDToolkit._apply_conn_ops.<locals>._set@5736']=_factory_99f7afa5386c
-def _factory_779794706298(self):
+CLOSURES['AWDToolkit._apply_conn_ops.<locals>._set@5740']=_factory_b40bcd47408f
+def _factory_d3b853d691a7(self):
 
     def _check():
         try:
@@ -5914,8 +5915,8 @@ def _factory_779794706298(self):
         except Exception:
             self.root.after(0, lambda: self.status_bar.config(text='状态刷新失败'))
     return _check
-CLOSURES['AWDToolkit._refresh_status.<locals>._check@5786']=_factory_779794706298
-def _factory_b23c1831c2d6(self, state):
+CLOSURES['AWDToolkit._refresh_status.<locals>._check@5790']=_factory_d3b853d691a7
+def _factory_eafcbc0a4080(self, state):
 
     def _kill():
         try:
@@ -5928,8 +5929,8 @@ def _factory_b23c1831c2d6(self, state):
             pass
         self.root.after(0, lambda: self.status_bar.config(text='❌ 部署超时(120s)已中断'))
     return _kill
-CLOSURES['AWDToolkit._run_workflow.<locals>._kill@5850']=_factory_b23c1831c2d6
-def _factory_c0acce13ed12(host, port, pwd, self, ssh_port_str, ssh_user, state, watchdog, web_dir_input):
+CLOSURES['AWDToolkit._run_workflow.<locals>._kill@5854']=_factory_eafcbc0a4080
+def _factory_32b4be0b22f5(host, port, pwd, self, ssh_port_str, ssh_user, state, watchdog, web_dir_input):
 
     def _run():
         try:
@@ -6102,4 +6103,4 @@ def _factory_c0acce13ed12(host, port, pwd, self, ssh_port_str, ssh_user, state, 
             self.root.after(0, lambda e=e: self._log_workflow('❌ 一键部署失败: ' + str(e)[:100]))
             self.root.after(0, lambda e=e: messagebox.showerror('一键部署失败', f'部署流程出错:\n{e}\n\n检查: ①靶机网络是否可达(靶机没启动/网络不通时连不上) ②SSH端口是否正确 ③SSH用户/密码 ④Web目录权限'))
     return _run
-CLOSURES['AWDToolkit._run_workflow.<locals>._run@5860']=_factory_c0acce13ed12
+CLOSURES['AWDToolkit._run_workflow.<locals>._run@5864']=_factory_32b4be0b22f5

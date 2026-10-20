@@ -69,6 +69,18 @@ bearer_token_env_var = "GODHAND_MCP_TOKEN"
 {"action":"run","arguments":{"operation":"ops_audit_local","target":"local","parameters":{"directory":"C:/比赛/site"},"timeout":60}}
 ```
 
+防御能力也通过现有唯一入口登记和调用。先对已授权目标运行只读探测；启用 Fail2Ban、改动 Watchbird/WAF 或更新 AIDE 基线时，选择对应写能力单独提交。管理白名单应填写 GodHand 管理端/出口的来源 IP，不应使用目标服务器 IP。
+
+```json
+{"action":"capabilities","arguments":{"operation":"defense_probe"}}
+```
+
+```json
+{"action":"run","arguments":{"operation":"defense_workflow_run","target":"目标ID","parameters":{"workflow":"host_audit"},"timeout":240}}
+```
+
+防御中心的全部能力、参数与副作用说明见[操作说明](防御中心.md)。三类流程只收集证据，不自动封禁或修改目标配置。报告可用 `defense_report` 从任务历史生成；失败步骤会保留部分结果并标记任务状态。
+
 长任务立即返回 result.id。用 `{"action":"task","arguments":{"task_id":"返回的 id"}}` 查询，logs 读取事件，cancel 停止。停止后确认终态与清理记录。断连不自动取消任务，重连仍可查同一 id；同一幂等标识重试不会重复创建任务，参数必须一致。支持资源读取的客户端也可读取 `godhand://tasks/{id}`。
 
 升级后重连以刷新工具列表。旧版 godhand_echo、godhand_run 等独立工具已合并，改用统一 godhand 的对应 action。

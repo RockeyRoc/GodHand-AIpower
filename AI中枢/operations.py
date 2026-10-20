@@ -41,5 +41,7 @@ def catalogue():
     specs['template_render']=OperationSpec('template_render','渲染本机通信模板','TemplateHandler','render',local=True,fields={'template':{'kind':'value','default':'rsa_agent.php'}})
     from 防御模块.engine import catalogue as defense_catalogue
     specs.update(defense_catalogue())
+    from 防御模块.aoi import catalogue as aoi_catalogue
+    specs.update(aoi_catalogue())
     return specs
 

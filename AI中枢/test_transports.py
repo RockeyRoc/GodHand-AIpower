@@ -31,9 +31,9 @@ class Transports(unittest.TestCase):
     def test_version_is_single_source(self):
         import AI中枢
         from . import version
-        self.assertEqual('1.4.0', VERSION)
+        self.assertEqual('1.5.0', VERSION)
         self.assertEqual(VERSION, AI中枢.VERSION)
-        self.assertEqual((1, 4, 0, 0), version.numeric())
+        self.assertEqual((1, 5, 0, 0), version.numeric())
 
     def test_codex_install_preserves_other_tables_and_is_idempotent(self):
         target = self.path / 'config.toml'

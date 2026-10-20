@@ -298,7 +298,7 @@ def normalize_watchbird_log(text):
 
 
 @contextmanager
-def ssh_session(target, timeout=12):
+def ssh_session(target, timeout=12, preserve_errors=False):
     import paramiko
     host = str(target.get("ip", "")).strip()
     port = target.get("ssh_port", 22)
@@ -319,6 +319,8 @@ def ssh_session(target, timeout=12):
                     look_for_keys=True, allow_agent=True, timeout=timeout, banner_timeout=timeout, auth_timeout=timeout)
         yield ssh
     except Exception as exc:
+        if preserve_errors:
+            raise
         raise DefenseError("SSH 连接或远程操作失败：" + str(exc)[:700]) from None
     finally:
         ssh.close()

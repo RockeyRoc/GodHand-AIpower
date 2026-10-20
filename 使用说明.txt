@@ -1,7 +1,7 @@
-GodHand 1.4.0 使用说明
+GodHand 1.5.0 使用说明
 
 1. 源码运行 main_work.py，或启动便携包 GodHand.exe。不要单独移动 EXE，保留 _runtime。
-2. 原 WAF、Flag、监控、通信、运维、机子管理入口继续使用。综合运维新增“防御中心”，可检查目标已有 Fail2Ban、Watchbird、Lynis、YARA、AIDE 并运行主机巡检、Web 检查和完整性复核。
+2. 原 WAF、Flag、监控、通信、运维、机子管理入口继续使用。综合运维的“防御中心”提供 AoiAWD 部署和监测连接，Fail2Ban、Watchbird、Lynis、YARA、AIDE 等原有能力保留在 MCP。
 3. 工具管理中搜索能力，设置参数 JSON 和目标标识，点击启动；任务列表显示状态、结果及日志，长任务可以停止。
 4. AI 中枢中先停止服务，填写允许的主机 IP/标识和提交平台地址，保存后启动；复制凭据至 Agent 启动终端的 GODHAND_MCP_TOKEN 环境变量，再导出 Claude Code 或 Codex 示例配置。
 5. 所有 Agent 共用同一个 /mcp 地址，唯一工具为 godhand(action, arguments)。先调用 action=echo，再用 capabilities/targets/tools 读取能力、目标和依赖；run/run_tool 提交任务，task/logs 查询，cancel 停止。
@@ -28,3 +28,7 @@ GodHand 1.3.0（历史更新）：
   - AI 中枢新增“导入后自动授权新记录”，默认关闭；开启需二次确认。
     关闭时导入项仍须在“选择允许目标（含 MCP 导入）”中按 ID 手动选择。
   - 版本号统一由 AI中枢/version.py 提供，EXE 资源信息、服务健康信息和发布清单一致。
+
+1.5.0 防御部署
+防御中心部署 AoiAWD 探针；Core、Web 与 MongoDB 在本机 Windows 运行，无需 Docker。选择授权靶机后部署，打开监测查看行为；卸载恢复 PHP 文件。旧防御能力通过 MCP 保留。
+接入、开发、能力与验收 Word 文档放在开发版 docx 文件夹，仅该文件夹不提交 Git、不进入便携包。原有 docs 文档正常保留。AI 使用见 skill.md。

@@ -6,7 +6,7 @@
 
 **面向 AWD / CTF 的图形化工具管理与 MCP AI 中枢**
 
-![Version](https://img.shields.io/badge/version-1.4.0-00b894)
+![Version](https://img.shields.io/badge/version-1.5.0-00b894)
 ![Platform](https://img.shields.io/badge/platform-Windows-0078D4)
 ![MCP](https://img.shields.io/badge/MCP-Streamable_HTTP-7c3aed)
 
@@ -36,7 +36,17 @@ GodHand 基于 [Wwlsyl / YL_Phantom](https://github.com/Wwlsyl/YL_Phantom) 导�
 | AI 中枢 | MCP 服务、客户端配置导出、目标与能力范围、凭据、健康检查 |
 | 任务管理 | 后台执行、状态与日志、产物、超时、取消、幂等提交及重启恢复 |
 
-当前业务目录登记 **95 个业务动作**，另提供 **5 个内置工具入口**；具体参数通过 `capabilities` 和 `tools` 查询。接口登记与各场景的验证情况见[能力覆盖表](docs/能力覆盖表.md)。
+当前业务目录登记 **102 个业务动作**，另提供 **5 个内置工具入口**；具体参数通过 `capabilities` 和 `tools` 查询。接口登记与各场景的验证情况见能力覆盖表。
+
+### 1.5.0 更新
+
+- 防御中心只做 AoiAWD 探针部署、环境检查、监测页连接与卸载恢复；旧防御动作保留 MCP 接口。
+- AoiAWD Core、Web 和 MongoDB 随 GodHand 配套提供，在 Windows 原生运行，不依赖 Docker 或 WSL。
+- Linux 靶机部署 RoundWorm 文件与进程探针、PHP Web 探针和可选 Guardian PWN 探针；原 ELF 保留，另生成 `.guardianed` 程序。
+- 每个目标使用独立监测页面及数据命名空间。回传通过现有 SSH 连接，靶机只监听回环端口。
+- PHP 部署先备份并逐文件检查语法；卸载恢复部署内容，保留期间的其他编辑。断线时保持原业务响应。
+- 新增 [skill.md](skill.md)。接入、开发、能力与验收 Word 文档放在 `docx/` 文件夹；仅该文件夹排除 Git 提交和便携打包，原有 `docs/` 文档继续保留。
+- 上游原始源码、实际修改后的对应源码及许可随 AoiAWD 配套环境提供；来源见[第三方来源](防御模块/SOURCES.md)。
 
 ### 1.4.0 更新
 
@@ -79,7 +89,7 @@ python -m venv .venv
 .\.venv\Scripts\python.exe main_work.py
 ```
 
-`main.py` 是兼容入口，也可使用 `python main.py`。GitHub 仓库提供源码、模板和文档；`GodHand.exe`、`_runtime`、本机安装的第三方工具与 Python 依赖不随源码提交，克隆后需要安装依赖并配置所需工具。
+`main.py` 是兼容入口，也可使用 `python main.py`。GitHub 仓库提供源码、模板和 skill.md；接入、开发、能力与验收文档仅在本地保存；`GodHand.exe`、`_runtime`、本机安装的第三方工具与 Python 依赖不随源码提交，克隆后需要安装依赖并配置所需工具。
 
 ### 首次配置
 
@@ -88,7 +98,7 @@ python -m venv .venv
 3. 在“AI 中枢”配置允许目标、启用能力和提交平台地址；修改配置前停止服务，保存后启动。
 4. 复制 MCP 凭据，配置 AI 客户端；先用 `echo` 检查连接，再查询目标、能力和工具。
 
-Tabby、WinSCP 需要单独提供程序文件。PHP 工具需要 PHP CLI；phpggc 还需要对应脚本。缺失依赖会在工具页显示，程序不会在比赛期间自动下载。详见[工具接入](docs/工具接入.md)。
+Tabby、WinSCP 需要单独提供程序文件。PHP 工具需要 PHP CLI；phpggc 还需要对应脚本。缺失依赖会在工具页显示，程序不会在比赛期间自动下载。详见工具接入。
 
 ### 无界面服务与诊断
 
@@ -152,7 +162,7 @@ args = ["--mcp-stdio", "--data-dir", "C:/CTF/GodHand-data/match-a"]
 
 源码模式可用 Python 可执行文件作为 `command`，将 `main_work.py` 的绝对路径放在 `args` 首项。HTTP 与 stdio 配置二选一；两种通道共用本机服务和任务库。stdio 启动的服务随该会话结束，需长期运行时先独立启动 `--mcp`。
 
-应用内可导出示例配置；修改地址、轮换凭据或更新服务后，重新连接客户端以刷新工具列表。完整说明见[MCP 接入](docs/MCP接入.md)。
+应用内可导出示例配置；修改地址、轮换凭据或更新服务后，重新连接客户端以刷新工具列表。完整说明见MCP 接入。
 
 ### 统一调用方式
 
@@ -233,7 +243,9 @@ GodHand-AIpower/
 ├── 攻击模块/             # 原项目通信、批量脚本及 PHP 工具
 ├── 防御模块/             # 修复与补丁部署
 ├── 上传靶机/             # 部署模板
-├── docs/                 # 接入、开发、能力与验收文档
+├── docs/                 # 随源码与便携包发布的文档
+├── docx/                 # 本地 Word 文档，不提交或打包
+├── skill.md              # AI 调用与部署指南
 ├── requirements.lock.txt # Python 依赖版本
 ├── build_exe.py          # 核心程序构建入口
 └── build_work.py         # 便携包构建入口
@@ -256,11 +268,11 @@ python build_work.py --check
 构建核心程序或含外部工具的便携包：
 
 ```powershell
-python build_exe.py --output ../GodHand-build/GodHand-core-1.4.0 --cache ../GodHand-tmp/build-core
-python build_work.py --output ../GodHand-build/GodHand-portable-1.4.0 --cache ../GodHand-tmp/build-portable --tools-root C:/CTF/PortableTools
+python build_exe.py --output ../GodHand-build/GodHand-core-1.5.0 --cache ../GodHand-tmp/build-core
+python build_work.py --output ../GodHand-build/GodHand-portable-1.5.0 --cache ../GodHand-tmp/build-portable --tools-root C:/CTF/PortableTools
 ```
 
-输出目录必须是新目录。便携构建的 `--tools-root` 目录需包含 `Tabby/` 与 `WinSCP/` 程序文件及许可证；构建会排除个人配置、运行数据和历史密钥，并生成文件校验清单及便携 ZIP。详见[开发与发布](docs/开发与发布.md)。
+输出目录必须是新目录。便携构建的 `--tools-root` 目录需包含 `Tabby/` 与 `WinSCP/` 程序文件及许可证；构建会排除个人配置、运行数据和历史密钥，并生成文件校验清单及便携 ZIP。详见开发与发布。
 
 ## 文档
 
@@ -282,10 +294,15 @@ python build_work.py --output ../GodHand-build/GodHand-portable-1.4.0 --cache ..
 | [历史验收](docs/验收记录.md) | 早期检查记录 |
 | [来源与鸣谢](docs/来源与鸣谢.md) | 原项目与第三方归属 |
 
+
+AI 调用指南见 [skill.md](skill.md)。本地 `docx/` 文件夹不提交 Git，也不进入便携包；`docs/` 文档正常保留。
+
+构建 Windows 监测配套环境：`python 防御模块/aoi_bundle.py`。脚本校验固定上游版本与归档 SHA-256，并构建静态 Linux x86_64 探针。首次构建需要联网；完整便携包在运行时无需下载依赖。
+
 ## 来源与鸣谢
 
 - 原项目：[YL_Phantom](https://github.com/Wwlsyl/YL_Phantom)，作者 **[Wwlsyl](https://github.com/Wwlsyl)**。感谢原作者提供 AWD 工具工程；GodHand 在导入工程上整合界面，并扩展工具管理、任务服务和 MCP 接入。
 - 当前仓库：[RockeyRoc / GodHand-AIpower](https://github.com/RockeyRoc/GodHand-AIpower)。
 - Tabby、WinSCP 及 Python 第三方依赖分别遵循其自身许可证与作者归属。
 
-当前仓库未声明统一开源许可证，请查阅原项目及各依赖的许可条款；原项目的用途说明不等同于 MIT、Apache 等开源授权。补充归属见[来源与鸣谢](docs/来源与鸣谢.md)。
+当前仓库未声明统一开源许可证，请查阅原项目及各依赖的许可条款；原项目的用途说明不等同于 MIT、Apache 等开源授权。补充归属见来源与鸣谢。

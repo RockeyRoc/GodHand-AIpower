@@ -73,7 +73,7 @@ class Acceptance(unittest.TestCase):
         result=wait_task(self.store,row['id'])
         self.assertEqual('succeeded',result['status'],result)
         data=result['result']['data']['return']
-        self.assertEqual('1.4.0',data['product_version'])
+        self.assertEqual('1.5.0',data['product_version'])
         self.assertTrue(Path(result['result']['data']['outputs']['markdown_report']).is_file())
     def test_06_legacy_audit_and_backup(self):
         source=self.path/'site';source.mkdir(exist_ok=True);(source/'index.php').write_text('<?php eval($_POST["x"]); ?>',encoding='utf-8')

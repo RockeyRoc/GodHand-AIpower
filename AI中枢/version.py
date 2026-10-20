@@ -1,6 +1,6 @@
 """Single source of truth for the GodHand product version."""
 
-VERSION = "1.4.0"
+VERSION = "1.5.0"
 
 
 def numeric(parts: int = 4) -> tuple[int, ...]:

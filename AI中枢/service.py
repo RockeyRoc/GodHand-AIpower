@@ -46,6 +46,8 @@ class TaskService:
         self.executor=ThreadPoolExecutor(max_workers=int(self.store.config['max_workers']),thread_name_prefix='godhand-task')
         self.capacity=threading.BoundedSemaphore(int(self.store.config['max_workers'])+int(self.store.config['max_queue']))
         self.stopping=threading.Event();self.lock=threading.RLock();self.cancels={};self.target_locks={};self.futures={}
+        from 防御模块.aoi import AoiRuntime
+        self.aoi=AoiRuntime(self.store)
         with self.store.connect() as c:
             c.execute("UPDATE tasks SET status=CASE WHEN write_action THEN 'needs_review' ELSE 'interrupted' END,updated=? WHERE status IN ('queued','running')",(time.time(),))
             table=c.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='submissions'").fetchone()
@@ -138,6 +140,18 @@ class TaskService:
             if cancel.is_set() or self.stopping.is_set():status='cancelled';return
             with self.store.connect() as c:c.execute("UPDATE tasks SET status='running',updated=? WHERE id=?",(time.time(),context.task_id))
             self.store.event(context.task_id,'started',{'operation':context.operation,'target':context.target})
+            if payload.get('kind')=='operation' and payload.get('spec',{}).get('actor')=='AoiHandler':
+                from 防御模块.aoi import Cancelled
+                started=time.monotonic()
+                def check():
+                    if cancel.is_set() or self.stopping.is_set():raise Cancelled('监测部署任务已取消')
+                    if time.monotonic()-started>context.timeout:raise TimeoutError('监测部署任务超时')
+                try:
+                    value=self.aoi.execute(context.operation,payload['target'],payload.get('parameters',{}),check)
+                    status='succeeded';result=TaskResult(context.task_id,status,summary='AoiAWD 操作完成',data={'return':value}).wire()
+                except Cancelled:
+                    status='cancelled';self.store.event(context.task_id,'cleanup',{'rollback_completed':True})
+                return
             if payload['kind']=='tool' and payload['tool']['kind']=='gui':
                 if payload['tool']['id'] not in ('tabby','winscp'):
                     spec=self.registry.get(payload['tool']['id']);command,cwd=self.registry.command(spec,payload['parameters'])
@@ -203,5 +217,6 @@ class TaskService:
         with self.lock:
             for event in self.cancels.values():event.set()
         self.executor.shutdown(wait=True,cancel_futures=False)
+        self.aoi.stop()
         self.instance.close()
 

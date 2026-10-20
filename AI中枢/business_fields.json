@@ -1,5 +1,5 @@
 {
-  "source_sha256": "95779b76f035b22da82ef50097172c00e848996d32205ddc0355762dd55011fb",
+  "source_sha256": "6ac459f4ef300f5fc686b987014de4c84daa0f3cd511279f0c7fb433f4370a3b",
   "fields": {
     "LogWidget": {
       "text": {
@@ -1157,7 +1157,15 @@
       }
     },
     "MachinesTab": {
-      "_machines_blocked": {
+      "machines": {
+        "kind": "literal",
+        "default": []
+      },
+      "_render_signature": {
+        "kind": "literal",
+        "default": null
+      },
+      "_reported_store_error": {
         "kind": "literal",
         "default": true
       },
@@ -1172,11 +1180,11 @@
         "kind": "value",
         "default": ""
       },
-      "cfg_file": {
+      "_store": {
         "kind": "value",
         "default": ""
       },
-      "machines": {
+      "cfg_file": {
         "kind": "value",
         "default": ""
       }
@@ -1543,10 +1551,11 @@
       "_domain_init"
     ],
     "MachinesTab": [
-      "_load",
-      "_save",
       "refresh",
+      "schedule_external_refresh",
+      "_selected_machine",
       "save_current",
+      "edit_selected",
       "load_selected",
       "launch_selected_tools",
       "delete_selected",

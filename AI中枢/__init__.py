@@ -3,7 +3,7 @@ from pathlib import Path
 import site
 import sys
 
-VERSION = '1.2.0'
+from .version import VERSION
 if not getattr(sys, 'frozen', False):
     vendor = Path(__file__).parent / 'vendor'
     if vendor.is_dir():

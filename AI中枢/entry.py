@@ -1,6 +1,7 @@
 """Shared frozen/source dispatch. Worker mode never imports Tk."""
 import argparse
 import json
+import os
 from pathlib import Path
 import signal
 import time
@@ -8,7 +9,9 @@ import time
 def _main(argv=None):
     parser=argparse.ArgumentParser(prog='GodHand')
     parser.add_argument('--worker',action='store_true');parser.add_argument('--request')
-    parser.add_argument('--mcp',action='store_true');parser.add_argument('--doctor',action='store_true')
+    parser.add_argument('--mcp',action='store_true');parser.add_argument('--mcp-stdio',action='store_true')
+    parser.add_argument('--install-codex-config',choices=['user','project'])
+    parser.add_argument('--doctor',action='store_true')
     parser.add_argument('--check-ui',action='store_true');parser.add_argument('--data-dir')
     args=parser.parse_args(argv)
     if args.worker:
@@ -16,13 +19,19 @@ def _main(argv=None):
         from .worker import main as worker
         return worker(args.request)
     from .core import Store
-    store=Store(data_dir=args.data_dir)
+    store=Store(data_dir=args.data_dir or os.environ.get('GODHAND_DATA_DIR'))
+    if args.mcp_stdio:
+        from .stdio_bridge import serve
+        return serve(store)
+    if args.install_codex_config:
+        from .clientconfig import install_codex
+        print(json.dumps(install_codex(store,args.install_codex_config),ensure_ascii=False,indent=2));return 0
     if args.doctor:
         from .operations import catalogue
         from 工具管理模块.registry import Registry
-        print(json.dumps({'version':'1.2.0','operations':len(catalogue()),'data_dir':str(store.path),'tools':Registry(store).status()},ensure_ascii=False,indent=2));return 0
+        from .version import VERSION
+        print(json.dumps({'version':VERSION,'operations':len(catalogue()),'data_dir':str(store.path),'tools':Registry(store).status()},ensure_ascii=False,indent=2));return 0
     if args.check_ui:
-        import os
         os.environ['GODHAND_CHECK_UI']='1'
         if args.data_dir:os.environ['GODHAND_DATA_DIR']=args.data_dir
         import main_work

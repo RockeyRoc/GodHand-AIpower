@@ -4,7 +4,7 @@ GodHand — AWD 统一管理平台
 集成: WAF管理 | Flag获取 | 靶机监控 | 木马上传 | 综合运维
 """
 import sys as _gh_sys
-if __name__ == '__main__' and any(flag in _gh_sys.argv for flag in ('--mcp','--worker','--doctor','--check-ui')):
+if __name__ == '__main__' and any(flag in _gh_sys.argv for flag in ('--mcp','--mcp-stdio','--install-codex-config','--worker','--doctor','--check-ui')):
     from AI中枢.entry import main as _gh_main
     raise SystemExit(_gh_main())
 
@@ -5009,44 +5009,32 @@ class OpsTab:
 #  机子管理 (多目标)
 # ============================================================
 class MachinesTab:
-    def __init__(self, parent, tabs_ref=None):
+    def __init__(self, parent, tabs_ref=None, store=None):
         self.parent = parent
         self.tabs_ref = tabs_ref
-        self.cfg_file = os.path.join(CONFIG_DIR, 'machines.json')
-        self.machines = self._load()
+        self.machines = []
+        self._store = store
+        if self._store is None:
+            try:
+                from AI中枢.core import Store
+                self._store = Store(root=Path(CONFIG_DIR).parent,data_dir=os.environ.get('GODHAND_DATA_DIR'))
+            except Exception as exc:
+                _warn_config(f'加密机子存储暂不可用：{exc}')
+        self.cfg_file = str(self._store.db) if self._store else '加密存储不可用'
+        self._render_signature = None
+        self._reported_store_error = False
         self.build_ui()
         self.refresh()
-
-    def _load(self):
-        self._machines_blocked = False
-        try:
-            if os.path.exists(self.cfg_file):
-                with open(self.cfg_file, encoding='utf-8-sig') as stream:
-                    data = json.load(stream)
-                if not isinstance(data, list) or any(not isinstance(item, dict) for item in data):
-                    raise ValueError('机子配置应为对象列表')
-                return data
-        except (OSError, ValueError) as exc:
-            self._machines_blocked = True
-            _warn_config(f'机子配置读取失败，原文件保留：{exc}')
-        return []
-
-    def _save(self):
-        try:
-            if getattr(self, '_machines_blocked', False):
-                raise ValueError('机子配置格式有误，已保留原文件，暂停覆盖')
-            atomic_write(self.cfg_file, json.dumps(self.machines, ensure_ascii=False, indent=2))
-        except (OSError, ValueError) as exc:
-            messagebox.showerror('保存失败', str(exc))
 
     def build_ui(self):
         f = tk.Frame(self.parent, bg='#070b14')
         f.pack(fill=tk.BOTH, expand=True, padx=4, pady=4)
         top = tb.Frame(f); top.pack(fill=tk.X, pady=4)
         tb.Button(top, text='\U00002795 保存当前连接', command=self.save_current, bootstyle='success').pack(side=tk.LEFT, padx=2)
+        tb.Button(top, text='编辑选中', command=self.edit_selected).pack(side=tk.LEFT, padx=2)
         tb.Button(top, text='\U0001f4e5 加载选中到全局', command=self.load_selected, bootstyle='info').pack(side=tk.LEFT, padx=2)
         tb.Button(top, text='\U0001f5d1 删除选中', command=self.delete_selected, bootstyle='danger').pack(side=tk.LEFT, padx=2)
-        tb.Button(top, text='\U0001f504 刷新', command=self.refresh).pack(side=tk.LEFT, padx=2)
+        tb.Button(top, text='\U0001f504 刷新机子', command=self.refresh).pack(side=tk.LEFT, padx=2)
         tb.Label(top, text='文件: ' + self.cfg_file, foreground='#6b7f9e').pack(side=tk.LEFT, padx=8)
         tools = tb.Frame(f); tools.pack(fill=tk.X, pady=(0, 4))
         tb.Button(tools, text='🖥️ 打开 Tabby 终端',
@@ -5058,24 +5046,60 @@ class MachinesTab:
         tb.Label(tools, text='使用当前选中主机的 SSH 地址；认证由对应程序处理',
                  foreground='#6b7f9e').pack(side=tk.LEFT, padx=8)
         body = tb.Frame(f); body.pack(fill=tk.BOTH, expand=True)
-        self.tree = tb.Treeview(body, columns=('name','ip','port','shell','pass','ssh_port','ssh_user'),
+        self.tree = tb.Treeview(body, columns=('name','ip','port','shell','pass','ssh_port','ssh_user','source'),
             show='headings', height=8)
         for col, txt, w in [('name','名称',130),('ip','IP',130),('port','Web端口',70),
-                            ('shell','Shell',150),('pass','密码',100),('ssh_port','SSH端口',70),('ssh_user','SSH用户',70)]:
+                            ('shell','Shell',150),('pass','密码',100),('ssh_port','SSH端口',70),('ssh_user','SSH用户',70),('source','来源',90)]:
             self.tree.heading(col, text=txt); self.tree.column(col, width=w, anchor=tk.W)
         vsb = tb.Scrollbar(body, orient='vertical', command=self.tree.yview)
         self.tree.configure(yscrollcommand=vsb.set)
         self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True); vsb.pack(side=tk.RIGHT, fill=tk.Y)
         self.tree.bind('<Double-1>', lambda e: self.load_selected())
-        tb.Label(f, text='\U0001f4a1 提示: 顶部全局连接栏填好目标后点"保存当前连接"入库; 选中后"加载到全局"一键切换并应用到各标签页',
+        tb.Label(f, text='\U0001f4a1 本机登记与 MCP 共用当前比赛加密机子库；连接变更后请在 AI 中枢重新选择允许目标。',
             foreground='#6b7f9e').pack(fill=tk.X, pady=4)
 
-    def refresh(self):
-        for item in self.tree.get_children(): self.tree.delete(item)
+    def refresh(self, force=True):
+        try:
+            if self._store:
+                self.machines=self._store.machine_records(private=True)
+                self._reported_store_error=False
+        except Exception as exc:
+            if not self._reported_store_error:
+                _warn_config(f'机子列表同步失败，已保留现有记录：{exc}')
+                self._reported_store_error=True
+        signature=json.dumps(self.machines,ensure_ascii=False,sort_keys=True,default=str)
+        if not force and signature==self._render_signature:return
+        selected=set(self.tree.selection())
+        for item in self.tree.get_children():self.tree.delete(item)
         for m in self.machines:
-            self.tree.insert('', 'end', values=(
-                m.get('name',''), m.get('ip',''), m.get('port',''), m.get('shell',''),
-                '••••••' if m.get('pass') else '', m.get('ssh_port',''), m.get('ssh_user','')))
+            identity=m['id']
+            source={'mcp':'MCP 导入','legacy':'历史登记','desktop':'本机登记'}.get(m.get('source'),'机子管理')
+            if m.get('conflict'):source+=' · 重复连接'
+            if m.get('requires_local_selection'):source+=' · 待重选'
+            self.tree.insert('', 'end', iid=identity, values=(
+                m.get('name',''),m.get('ip',''),m.get('port',''),m.get('shell',''),
+                '••••••' if m.get('pass') or m.get('password') else '',m.get('ssh_port',''),m.get('ssh_user',''),source))
+        for identity in selected:
+            if self.tree.exists(identity):self.tree.selection_add(identity)
+        self._render_signature=signature
+
+    def schedule_external_refresh(self):
+        root=getattr(self.tabs_ref,'root',None)
+        if root is None:return
+        def refresh_external():
+            if getattr(self.tabs_ref,'_closing',False):return
+            self.refresh(force=False)
+            try:root.after(1500,refresh_external)
+            except tk.TclError:pass
+        root.after(1500,refresh_external)
+
+    def _selected_machine(self):
+        selected=self.tree.selection()
+        if not selected:return None
+        identity=selected[0]
+        for machine in self.machines:
+            if machine['id']==identity:return machine
+        return None
 
     def save_current(self):
         t = self.tabs_ref
@@ -5084,27 +5108,63 @@ class MachinesTab:
         if not ip: messagebox.showwarning('提示', '请先在全局连接栏填写目标IP'); return
         name = simpledialog.askstring('机子名称', '输入一个名字 (如 team1 / 靶机2):', parent=self.parent)
         if not name: return
-        for m in self.machines:
-            if m.get('name') == name:
-                self.machines.remove(m); break
-        self.machines.append({
+        record={
             'name': name, 'ip': ip, 'port': t.global_port.get().strip(),
             'shell': t.global_shell.get().strip(), 'pass': t.global_pass.get().strip(),
             'ssh_port': t.global_ssh_port.get().strip(), 'ssh_user': t.global_ssh_user.get().strip(),
-        })
-        self._save(); self.refresh()
+        }
+        try:
+            if not self._store:raise ValueError('加密机子存储不可用')
+            result=self._store.add_target(record)['targets'][0]
+            self.refresh();self.tree.selection_set(result['id'])
+            if result['status']=='skipped':
+                differences='、'.join(result['differences']) or '无'
+                messagebox.showinfo('连接已存在','已选中现有记录，未覆盖任何字段。差异字段：'+differences+'。需要修改时请点“编辑选中”。')
+        except Exception as exc:messagebox.showerror('保存失败',str(exc))
+
+    def edit_selected(self):
+        machine=self._selected_machine()
+        if not machine:
+            messagebox.showwarning('提示','请先选择一台机子');return
+        self.build_target_editor(machine)
+
+    def build_target_editor(self,machine):
+        window=tk.Toplevel(self.parent);window.title('编辑机子');window.transient(self.parent.winfo_toplevel())
+        variables={}
+        fields=[('name','名称'),('ip','地址'),('port','Web 端口'),('shell','路径'),('pass','Web 凭据'),
+                ('ssh_port','SSH 端口'),('ssh_user','SSH 用户'),('ssh_pass','SSH 凭据'),
+                ('webdir','工作目录'),('monitor_pass','监控凭据'),('creep_pass','通信凭据')]
+        secrets={'pass','ssh_pass','monitor_pass','creep_pass'}
+        for index,(key,title) in enumerate(fields):
+            ttk.Label(window,text=title).grid(row=index,column=0,sticky='w',padx=10,pady=3)
+            variable=tk.StringVar(value=str(machine.get(key,'')));variables[key]=variable
+            ttk.Entry(window,textvariable=variable,width=48,show='•' if key in secrets else '').grid(row=index,column=1,padx=10,pady=3)
+        secure=tk.BooleanVar(value=bool(machine.get('https',False)))
+        ttk.Checkbutton(window,text='HTTPS',variable=secure).grid(row=len(fields),column=1,sticky='w',padx=10)
+        def save():
+            changes={key:variable.get() for key,variable in variables.items() if variable.get()!=str(machine.get(key,''))}
+            if secure.get()!=bool(machine.get('https',False)):changes['https']=secure.get()
+            if not changes:window.destroy();return
+            try:
+                if not self._store:raise ValueError('加密机子存储不可用')
+                result=self._store.update_target(machine['id'],changes,expected_revision=machine['revision'])
+                self.refresh();window.destroy()
+                if result['requires_local_selection']:messagebox.showinfo('连接已更新','目标 ID 保持不变；请在本机 AI 中枢按 ID 重新选择允许目标。')
+            except Exception as exc:messagebox.showerror('更新失败',str(exc),parent=window)
+        buttons=ttk.Frame(window);buttons.grid(row=len(fields)+1,column=0,columnspan=2,pady=10)
+        ttk.Button(buttons,text='保存修改',command=save).pack(side='left',padx=5)
+        ttk.Button(buttons,text='取消',command=window.destroy).pack(side='left',padx=5)
 
     def load_selected(self):
-        sel = self.tree.selection()
-        if not sel:
+        m = self._selected_machine()
+        if not m:
             messagebox.showwarning('提示', '请先在列表选择一台机子'); return
-        m = self.machines[self.tree.index(sel[0])]
         t = self.tabs_ref
         if not t: return
         t.global_ip.set(m.get('ip',''))
         t.global_port.set(m.get('port','80'))
         t.global_shell.set(m.get('shell','/shell.php'))
-        t.global_pass.set(m.get('pass',''))
+        t.global_pass.set(m.get('pass',m.get('password','')))
         t.global_ssh_port.set(m.get('ssh_port','2202'))
         t.global_ssh_user.set(m.get('ssh_user','ctf'))
         t._apply_conn()
@@ -5112,11 +5172,10 @@ class MachinesTab:
         except Exception: pass
 
     def launch_selected_tools(self, choice):
-        sel = self.tree.selection()
-        if not sel:
+        machine = self._selected_machine()
+        if not machine:
             messagebox.showwarning('提示', '请先在列表选择一台机子')
             return
-        machine = self.machines[self.tree.index(sel[0])]
         try:
             connection = SSHConnection.from_machine(machine)
         except ValueError as exc:
@@ -5152,11 +5211,20 @@ class MachinesTab:
                 messagebox.showerror('工具启动失败', detail)
 
     def delete_selected(self):
-        sel = self.tree.selection()
-        if not sel: return
-        m = self.machines[self.tree.index(sel[0])]
+        m = self._selected_machine()
+        if not m:return
         if messagebox.askyesno('删除', f'确认删除机子 "{m.get("name")}"？'):
-            self.machines.remove(m); self._save(); self.refresh()
+            if not self._store:
+                messagebox.showerror('删除失败','加密机子存储不可用');return
+            try:
+                result=self._store.delete_target(m['id'])
+                if result.get('warning'):messagebox.showwarning('记录已删除',result['warning'])
+            except Exception as exc:messagebox.showerror('删除失败',str(exc));return
+            picker=getattr(self.tabs_ref,'_godhand_target_picker',None)
+            if picker:
+                try:picker.reload()
+                except Exception:pass
+            self.refresh()
 
 
 # ============================================================
@@ -5477,7 +5545,7 @@ class AWDToolkit:
         right.pack(side=tk.RIGHT, padx=(0, 16), pady=6)
         tk.Label(right, text='SECURITY OPS CONSOLE', font=('微软雅黑', 9),
             fg='#00d4ff', bg=NEO['bg']).pack(anchor=tk.E)
-        tk.Label(right, text='GodHand v1.2.0', font=('微软雅黑', 9),
+        tk.Label(right, text='GodHand v1.3.0', font=('微软雅黑', 9),
             fg='#6b7f9e', bg=NEO['bg']).pack(anchor=tk.E)
         tk.Label(right, text='◉ ONLINE', font=('微软雅黑', 8),
             fg='#00ff9d', bg=NEO['bg']).pack(anchor=tk.E)
@@ -5595,7 +5663,7 @@ class AWDToolkit:
             avatar_lbl.image = avatar_img
             avatar_lbl.pack(side=tk.LEFT, padx=(0,4))
         except Exception: pass
-        tb.Label(help_frame, text='GodHand v1.2.0 | 工具管理 · MCP AI 中枢', font=('微软雅黑', 8), foreground='#6b7f9e').pack(side=tk.LEFT)
+        tb.Label(help_frame, text='GodHand v1.3.0 | 工具管理 · MCP AI 中枢', font=('微软雅黑', 8), foreground='#6b7f9e').pack(side=tk.LEFT)
         self.status_bar = tb.Label(help_frame, text='', font=('微软雅黑', 8), foreground='#00d4ff')
         self.status_bar.pack(side=tk.LEFT, padx=8)
         tb.Button(help_frame, text='❓ 使用帮助', command=self.show_help).pack(side=tk.RIGHT)
@@ -5603,6 +5671,7 @@ class AWDToolkit:
         self.root.after(1000, self._refresh_dashboard)
         from AI中枢.gui import attach
         attach(self)
+        self.machines.schedule_external_refresh()
         self.root.mainloop()
 
     def _apply_conn(self):
@@ -5993,7 +6062,7 @@ class AWDToolkit:
         text.tag_config('sep', font=('Consolas', 7))
 
         HELP = """══════════════════════════════════════════════════════════
- GodHand 作战指挥台 v1.2.0
+ GodHand 作战指挥台 v1.3.0
  AWD 攻防演练统一管理平台
 ══════════════════════════════════════════════════════════
 
@@ -6050,7 +6119,7 @@ class AWDToolkit:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   产品: GodHand
-  版本: 1.2.0
+  版本: 1.3.0
   来源与鸣谢: docs/来源与鸣谢.md
   用途: AWD攻防演练 / 安全测试 / CTF竞赛
 

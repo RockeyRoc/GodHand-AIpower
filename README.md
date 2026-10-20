@@ -6,7 +6,7 @@
 
 **面向 AWD / CTF 的图形化工具管理与 MCP AI 中枢**
 
-![Version](https://img.shields.io/badge/version-1.2.0-00b894)
+![Version](https://img.shields.io/badge/version-1.3.0-00b894)
 ![Platform](https://img.shields.io/badge/platform-Windows-0078D4)
 ![MCP](https://img.shields.io/badge/MCP-Streamable_HTTP-7c3aed)
 
@@ -37,6 +37,14 @@ GodHand 基于 [Wwlsyl / YL_Phantom](https://github.com/Wwlsyl/YL_Phantom) 导�
 | 任务管理 | 后台执行、状态与日志、产物、超时、取消、幂等提交及重启恢复 |
 
 当前业务目录登记 **75 个业务动作**，另提供 **5 个内置工具入口**；具体参数通过 `capabilities` 和 `tools` 查询。接口登记与各场景的验证情况见[能力覆盖表](docs/能力覆盖表.md)。
+
+### 1.3.0 更新
+
+- 新增 stdio 传输通道：`GodHand.exe --mcp-stdio`，与 HTTP 共用同一目标库、调度器和任务数据库，只支持 stdio 的客户端可直接接入。
+- AI 中枢新增“写入 Codex 配置”，可把 `mcp_servers.godhand` 写入用户级或项目级 `config.toml`；只替换该表，先备份原文件并校验 TOML。
+- 新增“导入后自动授权”本机开关，默认关闭；开启时需二次确认，关闭时导入项仍按 ID 手动选择。
+- 统一版本号到 `AI中枢/version.py`，EXE 资源、MCP 服务信息和发布清单均由该常量生成。
+- 重建 1.3.0 核心 EXE 与便携 ZIP。
 
 ### 1.2.0 更新
 
@@ -112,6 +120,8 @@ $env:GODHAND_MCP_TOKEN = '替换为 AI 中枢显示的凭据'
 
 ### Codex
 
+可在“AI 中枢 → 写入 Codex 配置”中选择用户级或项目级配置；写入前备份原文件，只更新 `mcp_servers.godhand` 表。手动配置示例：
+
 客户端 `config.toml` 示例：
 
 ```toml
@@ -119,6 +129,18 @@ $env:GODHAND_MCP_TOKEN = '替换为 AI 中枢显示的凭据'
 url = "http://127.0.0.1:18765/mcp"
 bearer_token_env_var = "GODHAND_MCP_TOKEN"
 ```
+
+### stdio 客户端
+
+需要由客户端启动本机进程时，可选择 stdio 传输。以下为便携程序配置示例，路径替换为实际安装位置：
+
+```toml
+[mcp_servers.godhand]
+command = "C:/CTF/GodHand/GodHand.exe"
+args = ["--mcp-stdio", "--data-dir", "C:/CTF/GodHand-data/match-a"]
+```
+
+源码模式可用 Python 可执行文件作为 `command`，将 `main_work.py` 的绝对路径放在 `args` 首项。HTTP 与 stdio 配置二选一；两种通道共用本机服务和任务库。stdio 启动的服务随该会话结束，需长期运行时先独立启动 `--mcp`。
 
 应用内可导出示例配置；修改地址、轮换凭据或更新服务后，重新连接客户端以刷新工具列表。完整说明见[MCP 接入](docs/MCP接入.md)。
 
@@ -134,6 +156,7 @@ bearer_token_env_var = "GODHAND_MCP_TOKEN"
 | --- | --- |
 | `health` | 查看版本、服务状态和能力数量 |
 | `targets` / `targets_import` | 查询目标及允许状态 / 导入目标 |
+| `targets_update` | 按稳定 ID 显式更新字段，可用记录版本避免过期覆盖 |
 | `capabilities` / `tools` | 查询业务参数 / 工具和依赖 |
 | `run` / `run_tool` | 提交业务任务 / 启动工具或脚本 |
 | `task` / `tasks` | 查询单个任务 / 最近任务 |
@@ -177,11 +200,11 @@ bearer_token_env_var = "GODHAND_MCP_TOKEN"
 
 导入后，在 **AI 中枢 → 选择允许目标（含 MCP 导入）** 中选择目标，确定后停止服务、保存配置并重新启动。通过 `targets` 确认 `allowed` 状态，再使用返回的 `mcp_...` ID 提交任务。同名或同 IP 的多条记录必须使用明确 ID。
 
-导入不会自动连接靶机或修改允许范围。凭据字段、去重规则和完整示例见[靶机导入说明](docs/靶机导入.md)。
+导入不会自动连接靶机。“导入后自动授权新记录”默认关闭，关闭时需按上述步骤手动授权；在本机明确开启该开关后，新记录会自动加入允许范围，已有记录不会追溯授权。凭据字段、去重规则和完整示例见[靶机导入说明](docs/靶机导入.md)。
 
 ## 运行数据与模板
 
-服务配置、任务数据库和加密凭据默认保存在 `管理工具/GodHand`；MCP 服务可通过 `--data-dir` 隔离比赛数据。MCP 导入记录保存在对应数据目录，旧机子管理记录仍沿用原有存储。
+服务配置、任务数据库和加密凭据默认保存在 `管理工具/GodHand`；MCP 服务可通过 `--data-dir` 隔离比赛数据。GUI 与 MCP 共用该比赛目录中的加密机子库，首次读取时备份并迁入旧记录。迁移、更新与恢复方法见 [统一机子库说明](docs/机子库迁移与恢复.md)。
 
 凭据使用当前 Windows 用户的 DPAPI 保护。源码仓库排除个人连接配置、`rsa_keys.json`、运行数据库、日志及构建缓存。RSA 部署模板使用 `__GODHAND_RSA_PUBLIC__` / `__GODHAND_RSA_PRIVATE__` 占位符，通过 `template_render` 渲染为本机密钥对应的产物后再使用；密钥由本机生成和保存。
 
@@ -214,7 +237,7 @@ GodHand-AIpower/
 
 ```powershell
 python AI中枢/generate.py
-python -B -m unittest AI中枢.test_acceptance AI中枢.test_targets -v
+python -B -m unittest AI中枢.test_target_store AI中枢.test_targets AI中枢.test_acceptance AI中枢.test_transports -v
 python build_work.py --check
 ```
 
@@ -223,8 +246,8 @@ python build_work.py --check
 构建核心程序或含外部工具的便携包：
 
 ```powershell
-python build_exe.py --output ../GodHand-build/GodHand-core-1.2.0 --cache ../GodHand-tmp/build-core
-python build_work.py --output ../GodHand-build/GodHand-portable-1.2.0 --cache ../GodHand-tmp/build-portable --tools-root C:/CTF/PortableTools
+python build_exe.py --output ../GodHand-build/GodHand-core-1.3.0 --cache ../GodHand-tmp/build-core
+python build_work.py --output ../GodHand-build/GodHand-portable-1.3.0 --cache ../GodHand-tmp/build-portable --tools-root C:/CTF/PortableTools
 ```
 
 输出目录必须是新目录。便携构建的 `--tools-root` 目录需包含 `Tabby/` 与 `WinSCP/` 程序文件及许可证；构建会排除个人配置、运行数据和历史密钥，并生成文件校验清单及便携 ZIP。详见[开发与发布](docs/开发与发布.md)。
@@ -234,6 +257,8 @@ python build_work.py --output ../GodHand-build/GodHand-portable-1.2.0 --cache ..
 | 文档 | 内容 |
 | --- | --- |
 | [MCP 接入](docs/MCP接入.md) | 客户端配置、动作参数、任务与服务生命周期 |
+| [1.3.0 实现状态](docs/1.3.0-本轮实现状态.md) | 本轮交付范围、验证结果与未实现项 |
+| [1.3.0 同步检查](docs/1.3.0-同步检查.md) | 便携包校验、开发版同步与回归测试 |
 | [靶机导入](docs/靶机导入.md) | 字段、批量限制、去重和本机授权 |
 | [工具接入](docs/工具接入.md) | 工具登记、解释器、依赖和参数 |
 | [开发与发布](docs/开发与发布.md) | 业务生成、检查、构建和发布 |

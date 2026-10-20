@@ -35,10 +35,12 @@ def attach(app):
     registry=Registry(store);state={'ready':False,'starting':False}
     label=ttk.Label(ai,text='MCP 服务准备中…');label.pack(anchor='w')
     form=ttk.Frame(ai);form.pack(fill='x',pady=8)
-    port=tk.StringVar(value=str(store.config['port']));targets=tk.StringVar(value=', '.join(store.config['allowed_targets']));enabled=tk.StringVar(value=', '.join(store.config['enabled_operations']));platforms=tk.StringVar(value=', '.join(store.config.get('submission_endpoints',[])))
+    port=tk.StringVar(value=str(store.config['port']));targets=tk.StringVar(value=', '.join(store.config['allowed_targets']));enabled=tk.StringVar(value=', '.join(store.config['enabled_operations']));platforms=tk.StringVar(value=', '.join(store.config.get('submission_endpoints',[])));auto=tk.BooleanVar(value=bool(store.config.get('auto_authorize_imports',False)))
     for title,var in [('监听地址','127.0.0.1'),('端口',port),('允许目标（主机 IP 或标识，逗号分隔）',targets),('提交平台 URL（逗号分隔）',platforms),('启用能力（* 或能力标识，逗号分隔）',enabled)]:
         row=ttk.Frame(form);row.pack(fill='x',pady=3);ttk.Label(row,text=title,width=48).pack(side='left')
         ttk.Entry(row,textvariable=var if not isinstance(var,str) else None,state='normal' if not isinstance(var,str) else 'disabled').pack(side='left',fill='x',expand=True)
+    auto_row=ttk.Frame(form);auto_row.pack(fill='x',pady=3)
+    ttk.Checkbutton(auto_row,text='导入后自动授权新记录（仅本机；关闭时须按 ID 手动选择）',variable=auto).pack(side='left')
     buttons=ttk.Frame(ai);buttons.pack(fill='x',pady=5)
     def choose_targets():
         from .targets_gui import TargetPicker
@@ -71,15 +73,30 @@ def attach(app):
     def save():
         try:
             if state['ready']:raise ValueError('修改端口/范围前先停止服务；独立服务须在其终端停止')
-            store.save_config({'port':int(port.get()),'allowed_targets':[x.strip() for x in targets.get().split(',') if x.strip()],'submission_endpoints':[x.strip() for x in platforms.get().split(',') if x.strip()],'enabled_operations':[x.strip() for x in enabled.get().split(',') if x.strip()]});refresh_preview()
+            if auto.get() and not store.config.get('auto_authorize_imports'):
+                if not messagebox.askyesno('自动授权','开启后，任何来源（含 MCP）新导入的靶机将立即获得运行权限。\n确定开启？'):return
+            store.save_config({'port':int(port.get()),'allowed_targets':[x.strip() for x in targets.get().split(',') if x.strip()],'submission_endpoints':[x.strip() for x in platforms.get().split(',') if x.strip()],'enabled_operations':[x.strip() for x in enabled.get().split(',') if x.strip()],'auto_authorize_imports':bool(auto.get())});refresh_preview()
         except Exception as exc:messagebox.showerror('配置未保存',str(exc))
+    def install_codex():
+        choice=messagebox.askyesnocancel('写入 Codex 配置','是：用户级 %USERPROFILE%\\.codex\\config.toml\n否：项目级 <程序目录>\\.codex\\config.toml\n\n只替换 mcp_servers.godhand 表，其余内容保留，并先备份原文件。')
+        if choice is None:return
+        from .clientconfig import install_codex as write_codex
+        def run():
+            try:result=write_codex(store,'user' if choice else 'project')
+            except Exception as exc:app._dispatcher.post(lambda e=exc:messagebox.showerror('写入失败',str(e)));return
+            app._dispatcher.post(lambda r=result:messagebox.showinfo('已写入 Codex 配置','文件：'+r['path']+'\n备份：'+(r['backup'] or '（新建文件，无备份）')+'\n地址：'+r['url']+'\n\n'+r['hint']))
+        threading.Thread(target=run,daemon=True).start()
     def export():
         directory=filedialog.askdirectory(title='选择配置示例导出目录')
         if directory:
             a,b=client_configs(store);Path(directory,'claude.mcp.example.json').write_text(a,encoding='utf-8');Path(directory,'codex.mcp.example.toml').write_text(b,encoding='utf-8')
     def token():app.root.clipboard_clear();app.root.clipboard_append(store.tokens()['mcp_token']);messagebox.showinfo('已复制凭据','在启动 Agent 的 PowerShell 中设置 $env:GODHAND_MCP_TOKEN；凭据仅复制到剪贴板，未写入示例。')
     def rotate():store.rotate_token();messagebox.showinfo('凭据已更新','旧凭据立即失效；请重新复制并重启客户端连接。')
-    for title,fn in [('启动',start),('停止',stop),('保存配置',save),('健康检查',lambda:background(connection.call,lambda v:label.configure(text=json.dumps(v,ensure_ascii=False)))),('复制接入配置',lambda:(app.root.clipboard_clear(),app.root.clipboard_append(configs()))),('导出示例',export),('复制凭据',token),('轮换凭据',rotate)]:ttk.Button(buttons,text=title,command=fn).pack(side='left',padx=2)
+    def diagnostics_complete(result):
+        details='\n'.join(f"{item['name']}: {item['status']} — {item['detail']}" for item in result['checks'])
+        label.configure(text='MCP 自检通过' if result['status']=='ok' else 'MCP 自检失败：'+result.get('error',''))
+        messagebox.showinfo('MCP 连接自检',details) if result['status']=='ok' else messagebox.showerror('MCP 连接自检',details)
+    for title,fn in [('启动',start),('停止',stop),('保存配置',save),('MCP 连接自检',lambda:background(connection.diagnose,diagnostics_complete)),('复制接入配置',lambda:(app.root.clipboard_clear(),app.root.clipboard_append(configs()))),('写入 Codex 配置',install_codex),('导出示例',export),('复制凭据',token),('轮换凭据',rotate)]:ttk.Button(buttons,text=title,command=fn).pack(side='left',padx=2)
     ttk.Label(ai,text='数据与日志：'+str(store.path)+'\n统一 MCP 工具：godhand；各 Agent 共用上方地址。允许目标留空时远程能力不可调用。').pack(anchor='w')
     search=tk.StringVar();filterbar=ttk.Frame(manager);filterbar.pack(fill='x')
     ttk.Label(filterbar,text='搜索名称 / 类型').pack(side='left');ttk.Entry(filterbar,textvariable=search).pack(side='left',fill='x',expand=True)

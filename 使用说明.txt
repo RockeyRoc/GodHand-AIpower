@@ -14,3 +14,13 @@ GodHand 使用说明
 GodHand 1.1.0：本次采用新的 GodHand Logo。开发版/便携版已配套 tools/Tabby 与 tools/WinSCP。解释器和 phpggc 在 工具管理 → 工具路径 配置；留空自动检查扩展目录与 PATH。PHP/phpggc 资源不随基础包附带。
 
 GodHand 1.2.0 新增靶机导入：Agent 调用 godhand action=targets_import，arguments.records 为靶机对象数组。随后在 AI 中枢 → 选择允许目标，勾选目标，确定；停止服务后保存配置并启动。MCP 导入项按 ID 授权，导入本身不修改允许范围；重复连接默认跳过，不覆盖凭据。详细字段与示例见 docs/靶机导入.md。
+
+GodHand 1.3.0：
+  - 新增 stdio 通道：GodHand.exe --mcp-stdio（源码：python main_work.py --mcp-stdio）。
+    与 HTTP 共用同一服务、目标库和任务数据库；只支持 stdio 的客户端可直接登记。
+  - AI 中枢新增“写入 Codex 配置”，可选择用户级 %USERPROFILE%\.codex\config.toml
+    或项目级 <程序目录>\.codex\config.toml。只替换 mcp_servers.godhand 表，先备份再校验。
+    也可用命令行：GodHand.exe --install-codex-config user|project
+  - AI 中枢新增“导入后自动授权新记录”，默认关闭；开启需二次确认。
+    关闭时导入项仍须在“选择允许目标（含 MCP 导入）”中按 ID 手动选择。
+  - 版本号统一由 AI中枢/version.py 提供，EXE 资源信息、服务健康信息和发布清单一致。

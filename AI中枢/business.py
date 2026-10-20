@@ -3949,33 +3949,58 @@ class OpsTab(ActorState):
 
 class MachinesTab(ActorState):
 
-    def _load(self):
-        self._machines_blocked = False
+    def refresh(self, force=True):
         try:
-            if os.path.exists(self.cfg_file):
-                with open(self.cfg_file, encoding='utf-8-sig') as stream:
-                    data = json.load(stream)
-                if not isinstance(data, list) or any((not isinstance(item, dict) for item in data)):
-                    raise ValueError('机子配置应为对象列表')
-                return data
-        except (OSError, ValueError) as exc:
-            self._machines_blocked = True
-            _warn_config(f'机子配置读取失败，原文件保留：{exc}')
-        return []
-
-    def _save(self):
-        try:
-            if getattr(self, '_machines_blocked', False):
-                raise ValueError('机子配置格式有误，已保留原文件，暂停覆盖')
-            atomic_write(self.cfg_file, json.dumps(self.machines, ensure_ascii=False, indent=2))
-        except (OSError, ValueError) as exc:
-            messagebox.showerror('保存失败', str(exc))
-
-    def refresh(self):
+            if self._store:
+                self.machines = self._store.machine_records(private=True)
+                self._reported_store_error = False
+        except Exception as exc:
+            if not self._reported_store_error:
+                _warn_config(f'机子列表同步失败，已保留现有记录：{exc}')
+                self._reported_store_error = True
+        signature = json.dumps(self.machines, ensure_ascii=False, sort_keys=True, default=str)
+        if not force and signature == self._render_signature:
+            return
+        selected = set(self.tree.selection())
         for item in self.tree.get_children():
             self.tree.delete(item)
         for m in self.machines:
-            self.tree.insert('', 'end', values=(m.get('name', ''), m.get('ip', ''), m.get('port', ''), m.get('shell', ''), '••••••' if m.get('pass') else '', m.get('ssh_port', ''), m.get('ssh_user', '')))
+            identity = m['id']
+            source = {'mcp': 'MCP 导入', 'legacy': '历史登记', 'desktop': '本机登记'}.get(m.get('source'), '机子管理')
+            if m.get('conflict'):
+                source += ' · 重复连接'
+            if m.get('requires_local_selection'):
+                source += ' · 待重选'
+            self.tree.insert('', 'end', iid=identity, values=(m.get('name', ''), m.get('ip', ''), m.get('port', ''), m.get('shell', ''), '••••••' if m.get('pass') or m.get('password') else '', m.get('ssh_port', ''), m.get('ssh_user', ''), source))
+        for identity in selected:
+            if self.tree.exists(identity):
+                self.tree.selection_add(identity)
+        self._render_signature = signature
+
+    def schedule_external_refresh(self):
+        root = getattr(self.tabs_ref, 'root', None)
+        if root is None:
+            return
+
+        def refresh_external():
+            if getattr(self.tabs_ref, '_closing', False):
+                return
+            self.refresh(force=False)
+            try:
+                root.after(1500, refresh_external)
+            except tk.TclError:
+                pass
+        root.after(1500, refresh_external)
+
+    def _selected_machine(self):
+        selected = self.tree.selection()
+        if not selected:
+            return None
+        identity = selected[0]
+        for machine in self.machines:
+            if machine['id'] == identity:
+                return machine
+        return None
 
     def save_current(self):
         t = self.tabs_ref
@@ -3988,27 +4013,38 @@ class MachinesTab(ActorState):
         name = simpledialog.askstring('机子名称', '输入一个名字 (如 team1 / 靶机2):', parent=self.parent)
         if not name:
             return
-        for m in self.machines:
-            if m.get('name') == name:
-                self.machines.remove(m)
-                break
-        self.machines.append({'name': name, 'ip': ip, 'port': t.global_port.get().strip(), 'shell': t.global_shell.get().strip(), 'pass': t.global_pass.get().strip(), 'ssh_port': t.global_ssh_port.get().strip(), 'ssh_user': t.global_ssh_user.get().strip()})
-        self._save()
-        self.refresh()
+        record = {'name': name, 'ip': ip, 'port': t.global_port.get().strip(), 'shell': t.global_shell.get().strip(), 'pass': t.global_pass.get().strip(), 'ssh_port': t.global_ssh_port.get().strip(), 'ssh_user': t.global_ssh_user.get().strip()}
+        try:
+            if not self._store:
+                raise ValueError('加密机子存储不可用')
+            result = self._store.add_target(record)['targets'][0]
+            self.refresh()
+            self.tree.selection_set(result['id'])
+            if result['status'] == 'skipped':
+                differences = '、'.join(result['differences']) or '无'
+                messagebox.showinfo('连接已存在', '已选中现有记录，未覆盖任何字段。差异字段：' + differences + '。需要修改时请点“编辑选中”。')
+        except Exception as exc:
+            messagebox.showerror('保存失败', str(exc))
+
+    def edit_selected(self):
+        machine = self._selected_machine()
+        if not machine:
+            messagebox.showwarning('提示', '请先选择一台机子')
+            return
+        self.build_target_editor(machine)
 
     def load_selected(self):
-        sel = self.tree.selection()
-        if not sel:
+        m = self._selected_machine()
+        if not m:
             messagebox.showwarning('提示', '请先在列表选择一台机子')
             return
-        m = self.machines[self.tree.index(sel[0])]
         t = self.tabs_ref
         if not t:
             return
         t.global_ip.set(m.get('ip', ''))
         t.global_port.set(m.get('port', '80'))
         t.global_shell.set(m.get('shell', '/shell.php'))
-        t.global_pass.set(m.get('pass', ''))
+        t.global_pass.set(m.get('pass', m.get('password', '')))
         t.global_ssh_port.set(m.get('ssh_port', '2202'))
         t.global_ssh_user.set(m.get('ssh_user', 'ctf'))
         t._apply_conn()
@@ -4018,11 +4054,10 @@ class MachinesTab(ActorState):
             pass
 
     def launch_selected_tools(self, choice):
-        sel = self.tree.selection()
-        if not sel:
+        machine = self._selected_machine()
+        if not machine:
             messagebox.showwarning('提示', '请先在列表选择一台机子')
             return
-        machine = self.machines[self.tree.index(sel[0])]
         try:
             connection = SSHConnection.from_machine(machine)
         except ValueError as exc:
@@ -4051,22 +4086,44 @@ class MachinesTab(ActorState):
                 messagebox.showerror('工具启动失败', detail)
 
     def delete_selected(self):
-        sel = self.tree.selection()
-        if not sel:
+        m = self._selected_machine()
+        if not m:
             return
-        m = self.machines[self.tree.index(sel[0])]
         if messagebox.askyesno('删除', f'''确认删除机子 "{m.get('name')}"？'''):
-            self.machines.remove(m)
-            self._save()
+            if not self._store:
+                messagebox.showerror('删除失败', '加密机子存储不可用')
+                return
+            try:
+                result = self._store.delete_target(m['id'])
+                if result.get('warning'):
+                    messagebox.showwarning('记录已删除', result['warning'])
+            except Exception as exc:
+                messagebox.showerror('删除失败', str(exc))
+                return
+            picker = getattr(self.tabs_ref, '_godhand_target_picker', None)
+            if picker:
+                try:
+                    picker.reload()
+                except Exception:
+                    pass
             self.refresh()
 
-    def _domain_init(self, parent, tabs_ref=None):
+    def _domain_init(self, parent, tabs_ref=None, store=None):
         self.parent = parent
         self.tabs_ref = tabs_ref
-        self.cfg_file = os.path.join(CONFIG_DIR, 'machines.json')
-        self.machines = self._load()
+        self.machines = []
+        self._store = store
+        if self._store is None:
+            try:
+                from AI中枢.core import Store
+                self._store = Store(root=Path(CONFIG_DIR).parent, data_dir=os.environ.get('GODHAND_DATA_DIR'))
+            except Exception as exc:
+                _warn_config(f'加密机子存储暂不可用：{exc}')
+        self.cfg_file = str(self._store.db) if self._store else '加密存储不可用'
+        self._render_signature = None
+        self._reported_store_error = False
         self.refresh()
-    _fields = {'_machines_blocked': {'kind': 'literal', 'default': True}, 'tree': {'kind': 'table'}, 'parent': {'kind': 'value', 'default': ''}, 'tabs_ref': {'kind': 'value', 'default': ''}, 'cfg_file': {'kind': 'value', 'default': ''}, 'machines': {'kind': 'value', 'default': ''}}
+    _fields = {'machines': {'kind': 'literal', 'default': []}, '_render_signature': {'kind': 'literal', 'default': None}, '_reported_store_error': {'kind': 'literal', 'default': True}, 'tree': {'kind': 'table'}, 'parent': {'kind': 'value', 'default': ''}, 'tabs_ref': {'kind': 'value', 'default': ''}, '_store': {'kind': 'value', 'default': ''}, 'cfg_file': {'kind': 'value', 'default': ''}}
 
 class ToolsTab(ActorState):
 
@@ -4631,7 +4688,7 @@ class AWDToolkit(ActorState):
         text.tag_config('h2', font=('Consolas', 11, 'bold'), spacing3=6)
         text.tag_config('code', font=('Consolas', 9))
         text.tag_config('sep', font=('Consolas', 7))
-        HELP = '══════════════════════════════════════════════════════════\n GodHand 作战指挥台 v1.2.0\n AWD 攻防演练统一管理平台\n══════════════════════════════════════════════════════════\n\n╔══════════════════════════════════════════════════════════╗\n║  本工具仅用于授权安全测试，请遵守相关法律法规        ║\n╚══════════════════════════════════════════════════════════╝\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n                        免 责 声 明\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n1. 本工具仅限用于经授权的安全测试、CTF竞赛、AWD攻防演练等合法场景\n2. 严禁用于未经授权的网络攻击、入侵、数据窃取等违法行为\n3. 使用者需自行承担所有法律责任，开发者不承担任何连带责任\n4. 下载、安装、使用本工具即视为已阅读并同意以上条款\n5. 如有违反，一切后果由使用者自行承担\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n                        功 能 介 绍\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n▸ 📊 Dashboard 总览\n  · 全局状态卡片：目标数/存活数/Flag数/告警数/WAF部署/木马植入\n  · 快捷操作：部署WAF/获取Flag/一键加固/备份网站\n  · 活动趋势图 + 操作日志实时记录\n\n▸ 🛡️ WAF管理\n  · 批量部署 WAF 防护脚本到多个靶机\n  · 检查/更新/卸载 WAF 状态\n  · 执行日志/规则编辑/攻击流量分析/心跳监控\n\n▸ 🎯 Flag获取\n  · 周期性批量读取靶机 Flag\n  · 支持 RSA 加密通信 + 流量混淆\n  · 自动提交到平台 + 手动提交模式\n\n▸ 💡 靶机监控\n  · 实时监控文件变更/连接/告警\n  · 攻击者TOP排行\n  · 文件管理（浏览/编辑/上传/下载）\n\n▸ 🕷️ 木马上传\n  · 蠕虫马(自复制)/不死马(常驻)/MD5马(免杀)/内存马(无文件)\n  · 一键植入/部署/扩散/清除\n  · SSH后门 + 心跳检测\n\n▸ 🔧 综合运维\n  · 备份还原/木马查杀/数据库/加固基线\n  · 木马查杀/数据库/加固基线/自动修复\n  · IP黑名单/定时备份\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n                       产 品 说 明\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n  产品: GodHand\n  版本: 1.2.0\n  来源与鸣谢: docs/来源与鸣谢.md\n  用途: AWD攻防演练 / 安全测试 / CTF竞赛\n\n══════════════════════════════════════════════════════════\n              Powered by ttkbootstrap · Python\n══════════════════════════════════════════════════════════'
+        HELP = '══════════════════════════════════════════════════════════\n GodHand 作战指挥台 v1.3.0\n AWD 攻防演练统一管理平台\n══════════════════════════════════════════════════════════\n\n╔══════════════════════════════════════════════════════════╗\n║  本工具仅用于授权安全测试，请遵守相关法律法规        ║\n╚══════════════════════════════════════════════════════════╝\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n                        免 责 声 明\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n1. 本工具仅限用于经授权的安全测试、CTF竞赛、AWD攻防演练等合法场景\n2. 严禁用于未经授权的网络攻击、入侵、数据窃取等违法行为\n3. 使用者需自行承担所有法律责任，开发者不承担任何连带责任\n4. 下载、安装、使用本工具即视为已阅读并同意以上条款\n5. 如有违反，一切后果由使用者自行承担\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n                        功 能 介 绍\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n▸ 📊 Dashboard 总览\n  · 全局状态卡片：目标数/存活数/Flag数/告警数/WAF部署/木马植入\n  · 快捷操作：部署WAF/获取Flag/一键加固/备份网站\n  · 活动趋势图 + 操作日志实时记录\n\n▸ 🛡️ WAF管理\n  · 批量部署 WAF 防护脚本到多个靶机\n  · 检查/更新/卸载 WAF 状态\n  · 执行日志/规则编辑/攻击流量分析/心跳监控\n\n▸ 🎯 Flag获取\n  · 周期性批量读取靶机 Flag\n  · 支持 RSA 加密通信 + 流量混淆\n  · 自动提交到平台 + 手动提交模式\n\n▸ 💡 靶机监控\n  · 实时监控文件变更/连接/告警\n  · 攻击者TOP排行\n  · 文件管理（浏览/编辑/上传/下载）\n\n▸ 🕷️ 木马上传\n  · 蠕虫马(自复制)/不死马(常驻)/MD5马(免杀)/内存马(无文件)\n  · 一键植入/部署/扩散/清除\n  · SSH后门 + 心跳检测\n\n▸ 🔧 综合运维\n  · 备份还原/木马查杀/数据库/加固基线\n  · 木马查杀/数据库/加固基线/自动修复\n  · IP黑名单/定时备份\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n                       产 品 说 明\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n  产品: GodHand\n  版本: 1.3.0\n  来源与鸣谢: docs/来源与鸣谢.md\n  用途: AWD攻防演练 / 安全测试 / CTF竞赛\n\n══════════════════════════════════════════════════════════\n              Powered by ttkbootstrap · Python\n══════════════════════════════════════════════════════════'
         text.config(state=tk.NORMAL)
         text.insert(tk.END, HELP)
         text.config(state=tk.DISABLED)
@@ -5753,7 +5810,40 @@ def _factory_0b532ec06ff9(ip, path, port, pw, self):
             self.root.after(0, lambda e=e: messagebox.showerror('错误', str(e)))
     return run
 CLOSURES['OpsTab.do_phpinfo.<locals>.run@4969']=_factory_0b532ec06ff9
-def _factory_d57ba9a5d3ec(st):
+def _factory_0bca952b30d6(refresh_external, root, self):
+
+    def refresh_external():
+        if getattr(self.tabs_ref, '_closing', False):
+            return
+        self.refresh(force=False)
+        try:
+            root.after(1500, refresh_external)
+        except tk.TclError:
+            pass
+    return refresh_external
+CLOSURES['MachinesTab.schedule_external_refresh.<locals>.refresh_external@5089']=_factory_0bca952b30d6
+def _factory_cb4f73caef9f(machine, secure, self, variables, window):
+
+    def save():
+        changes = {key: variable.get() for key, variable in variables.items() if variable.get() != str(machine.get(key, ''))}
+        if secure.get() != bool(machine.get('https', False)):
+            changes['https'] = secure.get()
+        if not changes:
+            window.destroy()
+            return
+        try:
+            if not self._store:
+                raise ValueError('加密机子存储不可用')
+            result = self._store.update_target(machine['id'], changes, expected_revision=machine['revision'])
+            self.refresh()
+            window.destroy()
+            if result['requires_local_selection']:
+                messagebox.showinfo('连接已更新', '目标 ID 保持不变；请在本机 AI 中枢按 ID 重新选择允许目标。')
+        except Exception as exc:
+            messagebox.showerror('更新失败', str(exc), parent=window)
+    return save
+CLOSURES['MachinesTab.build_target_editor.<locals>.save@5144']=_factory_cb4f73caef9f
+def _factory_80721e496745(st):
 
     def log_msg(msg, tag='info'):
         st.config(state=tk.NORMAL)
@@ -5761,8 +5851,8 @@ def _factory_d57ba9a5d3ec(st):
         st.see(tk.END)
         st.config(state=tk.DISABLED)
     return log_msg
-CLOSURES['ToolsTab._log_widget.<locals>.log_msg@5188']=_factory_d57ba9a5d3ec
-def _factory_8ac29ad3e361(br, self):
+CLOSURES['ToolsTab._log_widget.<locals>.log_msg@5256']=_factory_80721e496745
+def _factory_da6bdc5cb231(br, self):
 
     def task():
         br.run_all(max_workers=int(self.br_workers.get()))
@@ -5776,8 +5866,8 @@ def _factory_8ac29ad3e361(br, self):
                 res = br.submit_flags()
                 self.root.after(0, lambda: self.br_log.log(f"[+] 提交结果: {sum((1 for r in res if r['status'] == 'ok'))}/{len(res)}"))
     return task
-CLOSURES['ToolsTab.br_run.<locals>.task@5385']=_factory_8ac29ad3e361
-def _factory_7cb709e57188():
+CLOSURES['ToolsTab.br_run.<locals>.task@5453']=_factory_da6bdc5cb231
+def _factory_99f7afa5386c():
 
     def _set(w, val):
         try:
@@ -5787,8 +5877,8 @@ def _factory_7cb709e57188():
         except Exception:
             pass
     return _set
-CLOSURES['AWDToolkit._apply_conn_ops.<locals>._set@5667']=_factory_7cb709e57188
-def _factory_eab94035e7d1(self):
+CLOSURES['AWDToolkit._apply_conn_ops.<locals>._set@5736']=_factory_99f7afa5386c
+def _factory_779794706298(self):
 
     def _check():
         try:
@@ -5824,8 +5914,8 @@ def _factory_eab94035e7d1(self):
         except Exception:
             self.root.after(0, lambda: self.status_bar.config(text='状态刷新失败'))
     return _check
-CLOSURES['AWDToolkit._refresh_status.<locals>._check@5717']=_factory_eab94035e7d1
-def _factory_1e72911eb8b4(self, state):
+CLOSURES['AWDToolkit._refresh_status.<locals>._check@5786']=_factory_779794706298
+def _factory_b23c1831c2d6(self, state):
 
     def _kill():
         try:
@@ -5838,8 +5928,8 @@ def _factory_1e72911eb8b4(self, state):
             pass
         self.root.after(0, lambda: self.status_bar.config(text='❌ 部署超时(120s)已中断'))
     return _kill
-CLOSURES['AWDToolkit._run_workflow.<locals>._kill@5781']=_factory_1e72911eb8b4
-def _factory_0527240a41dd(host, port, pwd, self, ssh_port_str, ssh_user, state, watchdog, web_dir_input):
+CLOSURES['AWDToolkit._run_workflow.<locals>._kill@5850']=_factory_b23c1831c2d6
+def _factory_c0acce13ed12(host, port, pwd, self, ssh_port_str, ssh_user, state, watchdog, web_dir_input):
 
     def _run():
         try:
@@ -6012,4 +6102,4 @@ def _factory_0527240a41dd(host, port, pwd, self, ssh_port_str, ssh_user, state, 
             self.root.after(0, lambda e=e: self._log_workflow('❌ 一键部署失败: ' + str(e)[:100]))
             self.root.after(0, lambda e=e: messagebox.showerror('一键部署失败', f'部署流程出错:\n{e}\n\n检查: ①靶机网络是否可达(靶机没启动/网络不通时连不上) ②SSH端口是否正确 ③SSH用户/密码 ④Web目录权限'))
     return _run
-CLOSURES['AWDToolkit._run_workflow.<locals>._run@5791']=_factory_0527240a41dd
+CLOSURES['AWDToolkit._run_workflow.<locals>._run@5860']=_factory_c0acce13ed12

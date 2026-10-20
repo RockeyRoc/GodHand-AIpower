@@ -11,6 +11,7 @@ import sys
 import zipfile
 from .core import app_root,atomic_json
 from .templates import clean,PRIVATE
+from .version import VERSION,numeric
 
 TEMPLATES=['watchdog.sh','watchdog.php','waf_strong.php','waf_ban.php','waf_admin.php','tinyfilemanager.php','target_monitor.php','rsa_agent.php','immortal_shell.php','creep_rsa_ae.php','creep_rsa.php','.waf.dat.php','.waf.dat','.creep.dat','.creep.php']
 MODULES={'攻击模块':['batch_runner.py','dfunc_bypass.py','mix_attack.py','phpggc_wrapper.py','rsa_crypto.py'],'防御模块':['auto_fix.py','patch_deploy.py','fix_library.json']}
@@ -36,13 +37,13 @@ def verify(package):
             if re.search(r'-----BEGIN [^-\r\n]*PRIVATE KEY-----\s+[A-Za-z0-9+/=\r\n]{80,}-----END [^-\r\n]*PRIVATE KEY-----',path.read_text(encoding='utf-8',errors='replace')):raise ValueError('发布包含历史私钥：'+str(relative))
         with path.open('rb') as stream:digest=hashlib.file_digest(stream,'sha256').hexdigest()
         rows.append({'path':relative.as_posix(),'size':path.stat().st_size,'sha256':digest})
-    atomic_json(package/'release-manifest.json',{'version':'1.2.0','files':rows,'excluded':'personal config, RSA keys, task DB, workspaces, logs, build caches'})
+    atomic_json(package/'release-manifest.json',{'version':VERSION,'files':rows,'excluded':'personal config, RSA keys, task DB, workspaces, logs, build caches'})
     return len(rows)
 
 def main(portable=False,argv=None):
     parser=argparse.ArgumentParser();parser.add_argument('--check',action='store_true');parser.add_argument('--output');parser.add_argument('--cache');parser.add_argument('--tools-root');parser.add_argument('--skip-freeze',action='store_true')
     args=parser.parse_args(argv);root=app_root()
-    output=Path(args.output or root.parent/'GodHand-AIpower-便携版'/'GodHand-1.2.0').resolve()
+    output=Path(args.output or root.parent/'GodHand-AIpower-便携版'/('GodHand-'+VERSION)).resolve()
     cache=Path(args.cache or root.parent/'GodHand-tmp'/'mcp-build').resolve()
     files=source_manifest(root)
     expected=json.loads((root/'AI中枢'/'business_fields.json').read_text(encoding='utf-8'))['source_sha256']
@@ -58,11 +59,12 @@ def main(portable=False,argv=None):
         destination.write_text(clean((root/'上传靶机'/name).read_text(encoding='utf-8-sig')),encoding='utf-8')
     vendor=root/'AI中枢'/'vendor'
     version_file=cache/'windows-version.txt'
-    version_file.write_text("VSVersionInfo(ffi=FixedFileInfo(filevers=(1,2,0,0),prodvers=(1,2,0,0),mask=0x3f,flags=0,OS=0x40004,fileType=1,subtype=0,date=(0,0)),kids=[StringFileInfo([StringTable('040904B0',[StringStruct('FileDescription','GodHand'),StringStruct('ProductName','GodHand'),StringStruct('FileVersion','1.2.0.0'),StringStruct('ProductVersion','1.2.0'),StringStruct('InternalName','GodHand'),StringStruct('OriginalFilename','GodHand.exe')])]),VarFileInfo([VarStruct('Translation',[1033,1200])])])",encoding='utf-8')
+    major,minor,patch,build=numeric()
+    version_file.write_text(f"VSVersionInfo(ffi=FixedFileInfo(filevers=({major},{minor},{patch},{build}),prodvers=({major},{minor},{patch},{build}),mask=0x3f,flags=0,OS=0x40004,fileType=1,subtype=0,date=(0,0)),kids=[StringFileInfo([StringTable('040904B0',[StringStruct('FileDescription','GodHand'),StringStruct('ProductName','GodHand'),StringStruct('FileVersion','{VERSION}.0'),StringStruct('ProductVersion','{VERSION}'),StringStruct('InternalName','GodHand'),StringStruct('OriginalFilename','GodHand.exe')])]),VarFileInfo([VarStruct('Translation',[1033,1200])])])",encoding='utf-8')
     if not args.skip_freeze:
         command=[sys.executable,'-c','import site,sys,runpy;site.addsitedir(sys.argv.pop(1));runpy.run_module("PyInstaller",run_name="__main__")',str(vendor),'--noconfirm','--clean','--onedir','--windowed','--contents-directory','_runtime','--name','GodHand','--icon',str(root/'logo.ico'),'--version-file',str(version_file),'--distpath',str(cache/'dist'),'--workpath',str(cache/'work'),'--specpath',str(cache),'--paths',str(root),'--paths',str(vendor)]
         for directory in MODULES:command.extend(['--paths',str(root/directory)])
-        for module in ['AI中枢.business','AI中枢.entry','AI中枢.worker','AI中枢.gui','AI中枢.gui_bridge','auto_fix','patch_deploy','rsa_crypto','phpggc_wrapper','dfunc_bypass','batch_runner','mix_attack','dashboard','tool_launchers','uvicorn.logging','uvicorn.loops.asyncio','uvicorn.protocols.http.h11_impl','uvicorn.lifespan.on']:
+        for module in ['AI中枢.business','AI中枢.entry','AI中枢.worker','AI中枢.gui','AI中枢.gui_bridge','AI中枢.version','AI中枢.stdio_bridge','AI中枢.clientconfig','AI中枢.target_store','AI中枢.storage','auto_fix','patch_deploy','rsa_crypto','phpggc_wrapper','dfunc_bypass','batch_runner','mix_attack','dashboard','tool_launchers','uvicorn.logging','uvicorn.loops.asyncio','uvicorn.protocols.http.h11_impl','uvicorn.lifespan.on']:
             command.extend(['--hidden-import',module])
         for package in ['mcp_types','httpx2','httpcore2','starlette','anyio','pydantic','ttkbootstrap','paramiko','cryptography','PIL']:
             command.extend(['--collect-all',package])

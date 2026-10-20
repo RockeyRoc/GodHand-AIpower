@@ -7,6 +7,20 @@
 3. 复制凭据，在启动 Agent 的 PowerShell 中设置 `$env:GODHAND_MCP_TOKEN = '复制的凭据'`。示例配置只引用环境变量；关闭终端后需重新设置。
 4. 所有客户端登记同一个 godhand 服务，无需为各模块再配置服务。
 
+## stdio 通道
+
+只支持 stdio 的客户端可直接登记本机进程：
+
+```toml
+[mcp_servers.godhand]
+command = "C:/GodHand/GodHand.exe"
+args = ["--mcp-stdio"]
+```
+
+stdio 进程是同一个本机服务的客户端：已有 HTTP 服务时直接附着；没有时由该进程启动并持有服务，stdio 会话结束时一并结束。两条通道共用机子库、调度器和任务数据库，同一个任务 ID 在两边都可查询。
+
+AI 中枢的“写入 Codex 配置”可选择用户级 `%USERPROFILE%\.codex\config.toml` 或项目级 `<程序目录>\.codex\config.toml`。程序只替换 `mcp_servers.godhand` 表，写入前备份原文件，写入后用 TOML 解析校验。命令行等价入口：`GodHand.exe --install-codex-config user|project`。
+
 Claude Code `.mcp.json`（也可通过客户端用户级 MCP 配置供所有项目使用）：
 
 ```json
@@ -30,7 +44,8 @@ bearer_token_env_var = "GODHAND_MCP_TOKEN"
 | health | 无 | 服务、统一工具名、能力数量 |
 | targets | 无 | 全部靶机、来源与是否允许，凭据脱敏 |
 | targets_import | records、on_duplicate（可省略） | 添加／批量导入靶机，待本机选择授权 |
-| capabilities | 无 | 全部业务操作、字段及默认值 |
+| targets_update | id、changes、expected_revision（可省略） | 按稳定 ID 显式更新；省略凭据保持不变，连接变更后须本机重选 |
+| capabilities | operation（可省略） | 全部或指定业务操作、字段及默认值 |
 | tools | 无 | 全部工具、路径及缺失依赖 |
 | run | operation、target、parameters、timeout、idempotency_key | 提交业务；后三项可省略 |
 | run_tool | tool、target、parameters、idempotency_key | 启动工具；后三项可省略，默认 local |
@@ -64,4 +79,6 @@ bearer_token_env_var = "GODHAND_MCP_TOKEN"
 
 重启后只读中断任务为 interrupted，远程修改任务为 needs_review，应核对靶机再重提。平台的 accepted、rejected、duplicate、rate_limited、unknown 分开记录，未知结果先查平台。端口冲突会明确报错，修改后同步客户端配置。轮换凭据后重设环境变量并重连。
 
-靶机录入示例及授权步骤见 [靶机导入说明](靶机导入.md)。导入记录保存于当前比赛数据目录，不改写旧机子管理文件；MCP 导入项按 ID 授权。
+靶机录入示例及授权步骤见 [靶机导入说明](靶机导入.md)。GUI 与 MCP 共用当前比赛目录的加密机子库；旧机子文件只在首次升级时备份迁入，不再被新版改写。迁移与恢复详见 [统一机子库说明](机子库迁移与恢复.md)。
+
+“导入后自动授权新记录”是本机开关，默认关闭。开启后（保存时二次确认）任何来源的新导入记录都会立即加入允许目标；关闭时导入项仍须在“选择允许目标（含 MCP 导入）”中按 ID 手动选择。该开关不能通过 MCP 修改。

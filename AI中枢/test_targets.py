@@ -47,9 +47,28 @@ class Targets(unittest.TestCase):
         first=self.store.import_targets([self.record(**{'pass':'ORIGINAL-SECRET'})]);identity=first['targets'][0]['id']
         repeat=self.store.import_targets([dict(self.record(),name='新名称',**{'pass':'REPLACED-SECRET'})])
         self.assertEqual(1,repeat['skipped']);self.assertEqual(identity,repeat['targets'][0]['id'])
+        self.assertEqual(['name','pass'],repeat['targets'][0]['differences'])
+        self.assertNotIn('ORIGINAL-SECRET',json.dumps(repeat));self.assertNotIn('REPLACED-SECRET',json.dumps(repeat))
         self.assertEqual('ORIGINAL-SECRET',self.store.resolve_target(identity)['pass'])
         with self.assertRaises(ValueError):self.store.import_targets([dict(self.record(),ip='127.0.0.2'),self.record()],on_duplicate='error')
         self.assertEqual(1,len(self.store.machine_records()))
+
+    def test_03b_delete_import_revokes_target_permission(self):
+        identity=self.store.import_targets([self.record()])['targets'][0]['id']
+        self.store.save_config({'allowed_targets':[identity]})
+        result=self.store.delete_imported_target(identity)
+        self.assertEqual({'deleted':True,'id':identity},result)
+        self.assertEqual([],self.store.config['allowed_targets'])
+        self.assertEqual([],self.store.machine_records())
+
+    def test_03c_legacy_endpoint_conflicts_get_distinct_ids(self):
+        atomic_json(self.root/'管理工具/machines.json',[
+            {'name':'记录 A','ip':'127.0.0.1','port':'8080','pass':'FIRST'},
+            {'name':'记录 B','ip':'127.0.0.1','port':'8080','pass':'SECOND'},
+        ])
+        rows=self.store.machine_records(private=True)
+        self.assertNotEqual(rows[0]['id'],rows[1]['id'])
+        self.assertTrue(rows[0]['conflict']);self.assertTrue(rows[1]['conflict'])
 
     def test_04_validation_atomic_and_namespace(self):
         invalid=[{},dict(self.record(),port=0),dict(self.record(),ip='http://127.0.0.1'),dict(self.record(),ip='local'),dict(self.record(),name='local'),dict(self.record(),id='local'),dict(self.record(),https='false'),dict(self.record(),ssh_pass=42)]
@@ -64,6 +83,14 @@ class Targets(unittest.TestCase):
         def add(_):return Store(self.root,self.path/'data').import_targets([self.record()])
         with ThreadPoolExecutor(max_workers=4) as pool:results=list(pool.map(add,range(8)))
         self.assertEqual(1,sum(r['imported'] for r in results));self.assertEqual(1,len(self.store.machine_records()))
+
+    def test_05b_config_updates_merge_across_store_instances(self):
+        first=Store(self.root,self.path/'data');second=Store(self.root,self.path/'data')
+        first.save_config({'allowed_targets':['preserve-this']})
+        second.save_config({'submission_endpoints':['http://127.0.0.1/submit']})
+        saved=json.loads((self.path/'data'/'hub.json').read_text(encoding='utf-8'))
+        self.assertEqual(['preserve-this'],saved['allowed_targets'])
+        self.assertEqual(['http://127.0.0.1/submit'],saved['submission_endpoints'])
 
     def test_06_mcp_single_entry_import(self):
         self.store.save_config({'port':free_port()});hub=Hub(self.store);hub.start()
@@ -80,6 +107,13 @@ class Targets(unittest.TestCase):
                     imported=await client.call_tool('godhand',{'action':'targets_import','arguments':{'records':[self.record(**{'ssh_pass':'RPC-SECRET'})]}})
                     self.assertFalse(imported.is_error,imported);self.assertNotIn('RPC-SECRET',str(imported))
                     identity=imported.structured_content['result']['targets'][0]['id']
+                    updated=await client.call_tool('godhand',{'action':'targets_update','arguments':{'id':identity,'changes':{'name':'RPC 更新资产'},'expected_revision':1}})
+                    self.assertFalse(updated.is_error,updated);self.assertNotIn('RPC-SECRET',str(updated))
+                    self.assertEqual(2,updated.structured_content['result']['revision'])
+                    self.assertIs(False,updated.structured_content['result']['requires_local_selection'])
+                    self.assertEqual('RPC-SECRET',self.store.resolve_target(identity)['ssh_pass'])
+                    stale=await client.call_tool('godhand',{'action':'targets_update','arguments':{'id':identity,'changes':{'name':'过期修改'},'expected_revision':1}})
+                    self.assertTrue(stale.is_error,stale)
                     targets=await client.call_tool('godhand',{'action':'targets'});self.assertFalse(targets.is_error,targets)
                     self.assertFalse(targets.structured_content['result'][0]['allowed'])
                     denied=await client.call_tool('godhand',{'action':'run','arguments':{'operation':'waf_check','target':identity}})
@@ -103,6 +137,22 @@ class Targets(unittest.TestCase):
             picker.search.set('靶机 B');picker.select_visible(True);picker.apply()
             self.assertIn(identity,selected);self.assertIn(another,selected)
             self.assertEqual([],self.store.config['allowed_targets'])
+        finally:root.destroy()
+
+    def test_07b_picker_requires_new_selection_after_connection_change(self):
+        import tkinter as tk
+        from .targets_gui import TargetPicker
+        identity=self.store.import_targets([self.record()])['targets'][0]['id']
+        self.store.save_config({'allowed_targets':[identity]})
+        root=tk.Tk();root.withdraw();selected=[]
+        try:
+            picker=TargetPicker(root,self.store,[identity],selected.extend)
+            self.assertIn(identity,picker.selected)
+            self.store.update_target(identity,{'ip':'127.0.0.3'})
+            picker.reload();self.assertNotIn(identity,picker.selected)
+            picker.select_visible(True);picker.reload();self.assertIn(identity,picker.selected)
+            picker.apply();self.store.save_config({'allowed_targets':selected})
+            self.assertTrue(self.store.resolve_target(identity)['allowed'])
         finally:root.destroy()
 
     def test_08_authorized_worker_uses_imported_snapshot(self):

@@ -46,9 +46,14 @@
   },
   "portable": {
     "generated": true,
-    "new_directory_startup": "not_passed",
-    "observed_exit_code": -1,
-    "cause": "unresolved"
+    "new_directory_startup": "passed",
+    "startup_verification": "user_confirmed_manual_desktop_launch",
+    "user_observation": "正常打开 1.6 界面",
+    "automated_startup": {
+      "status": "interfered",
+      "observed_exit_code": -1,
+      "user_confirmed_interference": "有其他任务或工具在自动关闭"
+    }
   },
   "public_release": {
     "version": "1.5.0",

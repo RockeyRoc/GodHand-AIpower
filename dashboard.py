@@ -268,7 +268,7 @@ class DashboardTab:
         # 右侧信息
         right = tk.Frame(row, bg='#082540')
         right.pack(side=tk.RIGHT, padx=(0, 14), pady=10)
-        tk.Label(right, text='v1.1.0 · SYSTEM ONLINE', font=('微软雅黑', 8, 'bold'),
+        tk.Label(right, text='v1.2.0 · SYSTEM ONLINE', font=('微软雅黑', 8, 'bold'),
             fg='#00ff9d', bg='#082540').pack(anchor=tk.E)
         self.clock_lbl = tk.Label(right, text='', font=('微软雅黑', 12, 'bold'),
             fg=C['accent'], bg='#082540')

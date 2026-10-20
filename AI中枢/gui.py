@@ -40,6 +40,11 @@ def attach(app):
         row=ttk.Frame(form);row.pack(fill='x',pady=3);ttk.Label(row,text=title,width=48).pack(side='left')
         ttk.Entry(row,textvariable=var if not isinstance(var,str) else None,state='normal' if not isinstance(var,str) else 'disabled').pack(side='left',fill='x',expand=True)
     buttons=ttk.Frame(ai);buttons.pack(fill='x',pady=5)
+    def choose_targets():
+        from .targets_gui import TargetPicker
+        app._godhand_target_picker=TargetPicker(app.root,store,[x.strip() for x in targets.get().split(',') if x.strip()],lambda ids:targets.set(', '.join(ids)))
+    ttk.Button(ai,text='选择允许目标（含 MCP 导入）',command=choose_targets).pack(anchor='w',pady=(0,4))
+    ttk.Label(ai,text='MCP 用 targets_import 添加靶机；导入项须在此按 ID 选择授权。').pack(anchor='w')
     preview=tk.Text(ai,height=12,wrap='word');preview.pack(fill='both',expand=True,pady=6)
     def configs():
         a,b=client_configs(store);return '# 所有 Agent 共用 /mcp；统一工具 godhand(action, arguments)\n# Claude Code .mcp.json\n'+a+'\n\n# Codex config.toml\n'+b
@@ -153,6 +158,6 @@ def attach(app):
         background(connection.close,lambda _:old_close())
     app.on_close=close;app.root.protocol('WM_DELETE_WINDOW',close);app._godhand_connection=connection
     if os.environ.get('GODHAND_CHECK_UI')=='1':
-        report={'product':app.root.title(),'window_logo':bool(app._window_logo),'banner_logo':bool(app._banner_logo),'dashboard_logo':bool(getattr(app.dash,'_logo',None)),'tabs':[notebook.tab(t,'text') for t in notebook.tabs()],'legacy_ops':len(app.ops._godhand_ops_notebook.tabs()),'tools':tool_rows}
+        report={'product':app.root.title(),'window_logo':bool(app._window_logo),'banner_logo':bool(app._banner_logo),'dashboard_logo':bool(getattr(app.dash,'_logo',None)),'target_picker':True,'tabs':[notebook.tab(t,'text') for t in notebook.tabs()],'legacy_ops':len(app.ops._godhand_ops_notebook.tabs()),'tools':tool_rows}
         atomic_json(store.path/'ui-check.json',report);app.root.after(300,old_close)
     else:start()

@@ -36,13 +36,13 @@ def verify(package):
             if re.search(r'-----BEGIN [^-\r\n]*PRIVATE KEY-----\s+[A-Za-z0-9+/=\r\n]{80,}-----END [^-\r\n]*PRIVATE KEY-----',path.read_text(encoding='utf-8',errors='replace')):raise ValueError('发布包含历史私钥：'+str(relative))
         with path.open('rb') as stream:digest=hashlib.file_digest(stream,'sha256').hexdigest()
         rows.append({'path':relative.as_posix(),'size':path.stat().st_size,'sha256':digest})
-    atomic_json(package/'release-manifest.json',{'version':'1.1.0','files':rows,'excluded':'personal config, RSA keys, task DB, workspaces, logs, build caches'})
+    atomic_json(package/'release-manifest.json',{'version':'1.2.0','files':rows,'excluded':'personal config, RSA keys, task DB, workspaces, logs, build caches'})
     return len(rows)
 
 def main(portable=False,argv=None):
     parser=argparse.ArgumentParser();parser.add_argument('--check',action='store_true');parser.add_argument('--output');parser.add_argument('--cache');parser.add_argument('--tools-root');parser.add_argument('--skip-freeze',action='store_true')
     args=parser.parse_args(argv);root=app_root()
-    output=Path(args.output or root.parent/'GodHand-AIpower-便携版'/'GodHand-1.1.0').resolve()
+    output=Path(args.output or root.parent/'GodHand-AIpower-便携版'/'GodHand-1.2.0').resolve()
     cache=Path(args.cache or root.parent/'GodHand-tmp'/'mcp-build').resolve()
     files=source_manifest(root)
     expected=json.loads((root/'AI中枢'/'business_fields.json').read_text(encoding='utf-8'))['source_sha256']
@@ -58,7 +58,7 @@ def main(portable=False,argv=None):
         destination.write_text(clean((root/'上传靶机'/name).read_text(encoding='utf-8-sig')),encoding='utf-8')
     vendor=root/'AI中枢'/'vendor'
     version_file=cache/'windows-version.txt'
-    version_file.write_text("VSVersionInfo(ffi=FixedFileInfo(filevers=(1,1,0,0),prodvers=(1,1,0,0),mask=0x3f,flags=0,OS=0x40004,fileType=1,subtype=0,date=(0,0)),kids=[StringFileInfo([StringTable('040904B0',[StringStruct('FileDescription','GodHand'),StringStruct('ProductName','GodHand'),StringStruct('FileVersion','1.1.0.0'),StringStruct('ProductVersion','1.1.0'),StringStruct('InternalName','GodHand'),StringStruct('OriginalFilename','GodHand.exe')])]),VarFileInfo([VarStruct('Translation',[1033,1200])])])",encoding='utf-8')
+    version_file.write_text("VSVersionInfo(ffi=FixedFileInfo(filevers=(1,2,0,0),prodvers=(1,2,0,0),mask=0x3f,flags=0,OS=0x40004,fileType=1,subtype=0,date=(0,0)),kids=[StringFileInfo([StringTable('040904B0',[StringStruct('FileDescription','GodHand'),StringStruct('ProductName','GodHand'),StringStruct('FileVersion','1.2.0.0'),StringStruct('ProductVersion','1.2.0'),StringStruct('InternalName','GodHand'),StringStruct('OriginalFilename','GodHand.exe')])]),VarFileInfo([VarStruct('Translation',[1033,1200])])])",encoding='utf-8')
     if not args.skip_freeze:
         command=[sys.executable,'-c','import site,sys,runpy;site.addsitedir(sys.argv.pop(1));runpy.run_module("PyInstaller",run_name="__main__")',str(vendor),'--noconfirm','--clean','--onedir','--windowed','--contents-directory','_runtime','--name','GodHand','--icon',str(root/'logo.ico'),'--version-file',str(version_file),'--distpath',str(cache/'dist'),'--workpath',str(cache/'work'),'--specpath',str(cache),'--paths',str(root),'--paths',str(vendor)]
         for directory in MODULES:command.extend(['--paths',str(root/directory)])

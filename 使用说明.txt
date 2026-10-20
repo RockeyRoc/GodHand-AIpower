@@ -12,3 +12,5 @@ GodHand 使用说明
 10. 详细配置和故障处理见 docs/MCP接入.md；本次验证范围见 docs/统一入口验收.md。
 
 GodHand 1.1.0：本次采用新的 GodHand Logo。开发版/便携版已配套 tools/Tabby 与 tools/WinSCP。解释器和 phpggc 在 工具管理 → 工具路径 配置；留空自动检查扩展目录与 PATH。PHP/phpggc 资源不随基础包附带。
+
+GodHand 1.2.0 新增靶机导入：Agent 调用 godhand action=targets_import，arguments.records 为靶机对象数组。随后在 AI 中枢 → 选择允许目标，勾选目标，确定；停止服务后保存配置并启动。MCP 导入项按 ID 授权，导入本身不修改允许范围；重复连接默认跳过，不覆盖凭据。详细字段与示例见 docs/靶机导入.md。

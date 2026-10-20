@@ -117,6 +117,7 @@ class Store:
             CREATE TABLE IF NOT EXISTS tasks(id TEXT PRIMARY KEY,operation TEXT,target TEXT,competition TEXT,caller TEXT,status TEXT,created REAL,updated REAL,write_action INTEGER,owner INTEGER,request TEXT,result TEXT);
             CREATE TABLE IF NOT EXISTS events(seq INTEGER PRIMARY KEY AUTOINCREMENT,task TEXT,time REAL,kind TEXT,payload TEXT);
             CREATE TABLE IF NOT EXISTS idempotency(key TEXT PRIMARY KEY,digest TEXT,task TEXT);
+            CREATE TABLE IF NOT EXISTS mcp_targets(id TEXT PRIMARY KEY,endpoint_key TEXT UNIQUE NOT NULL,record BLOB NOT NULL,created REAL NOT NULL);
             ''')
 
     @contextmanager
@@ -168,7 +169,7 @@ class Store:
         with self.connect() as c:rows=c.execute('SELECT * FROM events WHERE task=? AND seq>? ORDER BY seq LIMIT ?',(task,int(after),min(max(int(limit),1),500))).fetchall()
         return [{**dict(r),'payload':json.loads(r['payload'])} for r in rows]
 
-    def machine_records(self, private=False):
+    def legacy_machine_records(self):
         path=self.root/'管理工具'/'machines.json'
         raw=json.loads(path.read_text(encoding='utf-8-sig')) if path.exists() else []
         if isinstance(raw,dict):raw=raw.get('machines',list(raw.values()))
@@ -177,13 +178,32 @@ class Store:
             if not isinstance(item,dict):continue
             row=dict(item); identity='|'.join(str(row.get(k,'')) for k in ['ip','port','ssh_port','ssh_user','shell'])
             row['id']=hashlib.sha256(identity.encode()).hexdigest()[:16]
-            if not private:row={k:v for k,v in row.items() if k not in ['pass','password','ssh_pass','token','private']}
+            row['source']='legacy'
             rows.append(row)
         return rows
 
+    def target_is_allowed(self,row):
+        permitted=self.config['allowed_targets']
+        if row.get('source')=='mcp':return row.get('id') in permitted
+        return any(value in permitted for value in [row.get('id'),row.get('ip'),row.get('name')])
+
+    def machine_records(self, private=False):
+        from .targets import load_imported
+        rows=self.legacy_machine_records()+load_imported(self)
+        for row in rows:row['allowed']=self.target_is_allowed(row)
+        return rows if private else redact(rows)
+
+    def import_targets(self,records,on_duplicate='skip'):
+        from .targets import import_targets
+        return import_targets(self,records,on_duplicate)
+
     def resolve_target(self,identity):
-        for row in self.machine_records(True):
-            if identity in (row['id'],row.get('name'),row.get('ip')):return row
+        rows=self.machine_records(True)
+        for row in rows:
+            if identity==row['id']:return row
+        matches=[row for row in rows if identity in (row.get('name'),row.get('ip'))]
+        if len(matches)>1:raise ValueError('目标名称或 IP 对应多条记录，请使用目标 ID')
+        if matches:return matches[0]
         if identity=='local':return {'id':'local','ip':'local','name':'本地'}
         raise ValueError('目标不在主机管理记录中，请先在机子管理中保存')
 
@@ -191,7 +211,6 @@ class Store:
         allowed=self.config['enabled_operations']
         if '*' not in allowed and spec.id not in allowed:raise PermissionError('能力未启用：'+spec.id)
         if not spec.local:
-            permitted=self.config['allowed_targets']
-            if not target or not any(v in permitted for v in [target.get('id'),target.get('ip'),target.get('name')]):
+            if not target or not self.target_is_allowed(target):
                 raise PermissionError('请在 AI 中枢配置允许的目标；请求不能扩大范围')
 

@@ -24,6 +24,8 @@ _runtime/
 rsa_keys.json
 __pycache__/
 GodHand-test-data/
+/.acceptance/
+/.target-tests/
 
 # Local state, backups and credentials
 /管理工具/

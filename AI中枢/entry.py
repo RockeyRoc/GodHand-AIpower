@@ -20,7 +20,7 @@ def _main(argv=None):
     if args.doctor:
         from .operations import catalogue
         from 工具管理模块.registry import Registry
-        print(json.dumps({'version':'1.1.0','operations':len(catalogue()),'data_dir':str(store.path),'tools':Registry(store).status()},ensure_ascii=False,indent=2));return 0
+        print(json.dumps({'version':'1.2.0','operations':len(catalogue()),'data_dir':str(store.path),'tools':Registry(store).status()},ensure_ascii=False,indent=2));return 0
     if args.check_ui:
         import os
         os.environ['GODHAND_CHECK_UI']='1'

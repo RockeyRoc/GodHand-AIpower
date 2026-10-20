@@ -5477,7 +5477,7 @@ class AWDToolkit:
         right.pack(side=tk.RIGHT, padx=(0, 16), pady=6)
         tk.Label(right, text='SECURITY OPS CONSOLE', font=('微软雅黑', 9),
             fg='#00d4ff', bg=NEO['bg']).pack(anchor=tk.E)
-        tk.Label(right, text='GodHand v1.1.0', font=('微软雅黑', 9),
+        tk.Label(right, text='GodHand v1.2.0', font=('微软雅黑', 9),
             fg='#6b7f9e', bg=NEO['bg']).pack(anchor=tk.E)
         tk.Label(right, text='◉ ONLINE', font=('微软雅黑', 8),
             fg='#00ff9d', bg=NEO['bg']).pack(anchor=tk.E)
@@ -5595,7 +5595,7 @@ class AWDToolkit:
             avatar_lbl.image = avatar_img
             avatar_lbl.pack(side=tk.LEFT, padx=(0,4))
         except Exception: pass
-        tb.Label(help_frame, text='GodHand v1.1.0 | 工具管理 · MCP AI 中枢', font=('微软雅黑', 8), foreground='#6b7f9e').pack(side=tk.LEFT)
+        tb.Label(help_frame, text='GodHand v1.2.0 | 工具管理 · MCP AI 中枢', font=('微软雅黑', 8), foreground='#6b7f9e').pack(side=tk.LEFT)
         self.status_bar = tb.Label(help_frame, text='', font=('微软雅黑', 8), foreground='#00d4ff')
         self.status_bar.pack(side=tk.LEFT, padx=8)
         tb.Button(help_frame, text='❓ 使用帮助', command=self.show_help).pack(side=tk.RIGHT)
@@ -5993,7 +5993,7 @@ class AWDToolkit:
         text.tag_config('sep', font=('Consolas', 7))
 
         HELP = """══════════════════════════════════════════════════════════
- GodHand 作战指挥台 v1.1.0
+ GodHand 作战指挥台 v1.2.0
  AWD 攻防演练统一管理平台
 ══════════════════════════════════════════════════════════
 
@@ -6050,7 +6050,7 @@ class AWDToolkit:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   产品: GodHand
-  版本: 1.1.0
+  版本: 1.2.0
   来源与鸣谢: docs/来源与鸣谢.md
   用途: AWD攻防演练 / 安全测试 / CTF竞赛
 

@@ -28,7 +28,8 @@ bearer_token_env_var = "GODHAND_MCP_TOKEN"
 | action | arguments | 用途 |
 |---|---|---|
 | health | 无 | 服务、统一工具名、能力数量 |
-| targets | 无 | 已保存目标标识，凭据脱敏 |
+| targets | 无 | 全部靶机、来源与是否允许，凭据脱敏 |
+| targets_import | records、on_duplicate（可省略） | 添加／批量导入靶机，待本机选择授权 |
 | capabilities | 无 | 全部业务操作、字段及默认值 |
 | tools | 无 | 全部工具、路径及缺失依赖 |
 | run | operation、target、parameters、timeout、idempotency_key | 提交业务；后三项可省略 |
@@ -62,3 +63,5 @@ bearer_token_env_var = "GODHAND_MCP_TOKEN"
 同一数据目录只有一个服务；GUI 附着独立无界面服务后，关窗口保留该服务。由窗口启动的服务随窗口结束。管理数据默认在 管理工具/GodHand，--data-dir 可隔离比赛。凭据与请求使用当前 Windows 用户 DPAPI 加密。
 
 重启后只读中断任务为 interrupted，远程修改任务为 needs_review，应核对靶机再重提。平台的 accepted、rejected、duplicate、rate_limited、unknown 分开记录，未知结果先查平台。端口冲突会明确报错，修改后同步客户端配置。轮换凭据后重设环境变量并重连。
+
+靶机录入示例及授权步骤见 [靶机导入说明](靶机导入.md)。导入记录保存于当前比赛数据目录，不改写旧机子管理文件；MCP 导入项按 ID 授权。

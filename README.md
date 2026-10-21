@@ -73,7 +73,7 @@ AI 提交操作后会获得任务 ID。让 AI 继续查询任务和日志，或�
     {"action":"targets"}
     {"action":"capabilities","arguments":{"operation":"ops_backup"}}
 
-任务由 run 或 run_tool 提交；task、logs 查看结果；cancel 停止任务。参数和示例见 [AI 调用指南](skill.md)与 [MCP 接入](docs/MCP接入.md)。GodHand 用于已获授权的 AWD、CTF 及自建靶场，目标范围在本机选择。
+任务由 run 或 run_tool 提交；task、logs 查看结果；cancel 停止任务。攻击能力使用 `attack_*` 标识：`attack_dfunc_check`、`attack_mix_once` 只接受本机已允许的目标 ID，phpinfo/phpggc 分析使用本机能力；混淆攻击固定为单轮且不自动提交 Flag。参数和示例见 [AI 调用指南](skill.md)与 [MCP 接入](docs/MCP接入.md)。GodHand 用于已获授权的 AWD、CTF 及自建靶场，目标范围在本机选择。
 
 ## 数据与升级
 

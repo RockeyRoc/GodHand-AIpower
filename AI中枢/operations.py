@@ -43,5 +43,7 @@ def catalogue():
     specs.update(defense_catalogue())
     from 防御模块.aoi import catalogue as aoi_catalogue
     specs.update(aoi_catalogue())
+    from .attack import catalogue as attack_catalogue
+    specs.update(attack_catalogue())
     return specs
 

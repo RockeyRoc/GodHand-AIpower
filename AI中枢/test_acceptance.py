@@ -148,6 +148,16 @@ class Acceptance(unittest.TestCase):
                     self.assertFalse(defense.is_error,defense)
                     self.assertEqual(['defense_probe'],[item['id'] for item in defense.structured_content['result']])
                     self.assertIn('webdir',defense.structured_content['result'][0]['fields'])
+                    attack=await client.call_tool('godhand',{'action':'capabilities','arguments':{'operation':'attack_mix_once'}})
+                    self.assertFalse(attack.is_error,attack)
+                    self.assertEqual({'commands','mix','fake_count','request_timeout'},set(attack.structured_content['result'][0]['fields']))
+                    analysis=await client.call_tool('godhand',{'action':'run','arguments':{
+                        'operation':'attack_phpinfo_analyze','target':'local',
+                        'parameters':{'input':'disable_functions>exec,system< PHP Version </td><td>8.2.1<'}}})
+                    self.assertFalse(analysis.is_error,analysis)
+                    analysis_row=await asyncio.to_thread(wait_task,self.store,analysis.structured_content['result']['id'])
+                    self.assertEqual('succeeded',analysis_row['status'],analysis_row)
+                    self.assertEqual('8.2.1',analysis_row['result']['data']['return']['info']['php_version'])
                     report=await client.call_tool('godhand',{'action':'run','arguments':{'operation':'defense_report','target':'local','parameters':{'task_ids':[]}}})
                     self.assertFalse(report.is_error,report)
                     report_id=report.structured_content['result']['id']

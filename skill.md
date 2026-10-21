@@ -14,6 +14,8 @@ GodHand 让 AI 使用已保存的靶机和工具执行 AWD 任务，并在同一
 
 技能负责选择工作流程，MCP 负责实际调用。在“AI 中枢 → Codex 接入”写入配置，并到 Codex 的 MCP 设置重启 godhand。默认 stdio 无需手工设置令牌。
 
+攻击模块使用 `attack_*` 能力。先查询 `capabilities` 获取精确字段；`attack_dfunc_check` 与 `attack_mix_once` 必须使用 `targets` 返回且 `allowed=true` 的目标 ID。`attack_mix_once` 只执行一轮并返回结构化 Flag 结果，不自动提交；需要提交时再调用现有 `flag_submit`。`attack_phpinfo_analyze` 只接受文本，phpggc 的参数使用字符串数组传递，不拼接 shell 命令。
+
 ## 先确认连接和目标
 
     {"action":"echo","arguments":{"message":"GodHand ready"}}

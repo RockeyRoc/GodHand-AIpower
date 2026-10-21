@@ -17,6 +17,12 @@ defense_aoi_start、defense_aoi_status、defense_aoi_stop 使用 target=local，
 
 ## 常用流程
 
+### 攻击能力
+
+查询 `attack_*` 能力获得窄参数契约。`attack_dfunc_check` 使用目标库保存的 WebShell 路径与口令；`attack_mix_once` 每次只针对一个已允许目标执行一轮命令，返回 `flags`、`flag_count` 与模式，不自动提交。需要提交时将明确的 Flag 交给 `flag_submit`，保留两个任务 ID。
+
+`attack_phpinfo_analyze` 只解析提供的文本，不从 URL 下载。`attack_phpggc_list`、`attack_phpggc_search`、`attack_phpggc_generate` 使用本机 PHP/phpggc；生成参数必须是独立字符串数组，依赖缺失会返回明确错误。
+
 ### 查看目标与工具
 
 查询 targets，展示名称、ID、地址和 allowed 状态。tools 返回工具和缺失依赖。新目标通过 targets_import 的 records 数组导入；更新通过 targets_update 指定 ID 和 changes，已有 revision 时携带 expected_revision。

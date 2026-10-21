@@ -193,6 +193,9 @@ def run_operation(module,payload):
         from .templates import render
         name=payload.get('parameters',{}).get('template','rsa_agent.php')
         return {'return':render(name,state.current().path/'rendered'/Path(name).name)}
+    if spec['actor']=='AttackHandler':
+        from .attack import execute
+        return {'return':execute(spec['id'],payload.get('target',{}),payload.get('parameters',{}),state.current())}
     actor=actor_for(module,spec['actor'],payload.get('parameters',{}),payload.get('target',{}))
     method=getattr(actor,spec['method'])
     params=payload.get('parameters',{});target=payload.get('target',{})

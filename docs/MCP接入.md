@@ -92,3 +92,14 @@ needs_review 表示远程修改结果需核对；interrupted 为中断的只读�
 | 自检通过但 AI 尚未连接 | 自检验证后台与 MCP 协议；到 Codex 设置查看客户端连接状态 |
 
 “连接自检”逐项检查后台、鉴权、协议初始化、工具发现和 echo。实际业务结果通过 task、logs 及对应目标检查确认。
+
+## 攻击能力调用
+
+攻击模块提供稳定的 `attack_*` operation，通过 `action=capabilities` 查询字段，再用 `action=run` 提交：
+
+- `attack_dfunc_check`：检查一个已允许目标的 PHP 命令执行能力。
+- `attack_mix_once`：对一个已允许目标执行单轮命令，支持可选混淆请求；返回结构化 Flag，不自动提交。
+- `attack_phpinfo_analyze`：本机解析 phpinfo 文本，不接受 URL。
+- `attack_phpggc_list/search/generate`：本机列出、搜索和生成 phpggc 载荷。
+
+远程调用只接受 `targets` 返回且 `allowed=true` 的目标 ID，不接收任意 URL、口令、代理或提交地址。需要提交 Flag 时单独调用 `flag_submit`。

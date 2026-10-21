@@ -6,7 +6,7 @@ import uuid
 import unittest
 
 from 防御模块.aoi import catalogue, inject_php, restore_php
-from .release import verify, source_manifest
+from .release import verify, source_manifest, LOCAL_DOCS
 
 
 class AoiTests(unittest.TestCase):
@@ -64,6 +64,19 @@ class AoiTests(unittest.TestCase):
             for name in ['docs/验收.md', 'docs/参考.docx', '参考.docx']:
                 (package / name).write_bytes(b'public')
             self.assertEqual(3, verify(package))
+        finally:
+            shutil.rmtree(package)
+
+    def test_release_excludes_local_plans_and_evidence_inventories(self):
+        root = Path(__file__).resolve().parent.parent
+        sources = source_manifest(root)
+        self.assertFalse(any(p.name in LOCAL_DOCS for p in sources))
+        package = root / '.acceptance' / ('release-local-' + uuid.uuid4().hex)
+        try:
+            (package / 'docs').mkdir(parents=True)
+            (package / 'docs' / LOCAL_DOCS[0]).write_text('local', encoding='utf-8')
+            with self.assertRaisesRegex(ValueError, '本地规划'):
+                verify(package)
         finally:
             shutil.rmtree(package)
 

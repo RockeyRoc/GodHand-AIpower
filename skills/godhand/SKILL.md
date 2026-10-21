@@ -11,9 +11,10 @@ description: Use the GodHand MCP tool for authorized AWD/CTF targets, WAF, flags
 
 - 首次接入或遇到连接问题时查询 health/echo；查询 targets，选用用户指定且 allowed=true 的明确目标 ID。本机任务使用 local。
 - 按用户目标查询 capabilities；指定 operation 可只读取一项参数。外部工具先查询 tools，使用 run_tool。
-- 业务分组：waf_* 为 WAF；flag_* 为 Flag；monitor_* 为监控与文件；channel_* 为通信；ops_* 为备份、源码、SSH、数据库、进程等运维；defense_* 为 AoiAWD 与主机防御；template_render 为部署模板。
+- 业务分组：attack_* 为攻击分析与单轮执行；waf_* 为 WAF；flag_* 为 Flag；monitor_* 为监控与文件；channel_* 为通信；ops_* 为备份、源码、SSH、数据库、进程等运维；defense_* 为 AoiAWD 与主机防御；template_render 为部署模板。
 - 用户意图、目标或必要参数不明确时，先读取可用信息，再询问仍缺少的内容。保留用户已经明确的范围与偏好。
 - run 的 arguments 包含 operation、target、parameters，可加 timeout 和 idempotency_key。run_tool 使用 tool、target、parameters。采用查询结果中的真实标识与字段。
+- `attack_dfunc_check` 与 `attack_mix_once` 只使用已允许目标 ID；后者固定单轮且不自动提交 Flag。phpinfo 分析只传文本，phpggc 参数按字符串数组传递。提交 Flag 使用独立的 `flag_submit`。
 - 返回 result.id 后，用 task 查询状态，logs 读取事件。长任务使用有间隔的查询；将日志的 seq 作为下一次 after 游标。
 - 向用户报告最终状态、关键结果和产物/备份位置。失败时说明具体原因和可行的下一步；任务已提交与执行完成分别表述。
 
